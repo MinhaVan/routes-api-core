@@ -1,0 +1,15 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "⏱️ Rodando testes unitários..."
+
+dotnet test --no-build --nologo --verbosity quiet
+
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+  echo "❌ Testes falharam. Commit cancelado."
+  exit 1
+else
+  echo "✅ Testes passaram. Continuando o commit..."
+fi

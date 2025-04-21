@@ -1,0 +1,202 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoMapper;
+using Routes.Domain.Enums;
+using Routes.Domain.Interfaces.Repositories;
+using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Services;
+using Routes.Domain.Models;
+using Routes.Domain.ViewModels;
+using Microsoft.EntityFrameworkCore;
+
+namespace Routes.Service.Implementations;
+
+public class RotaService : IRotaService
+{
+    private readonly IMapper _mapper;
+    private readonly IUserContext _userContext;
+    private readonly IBaseRepository<Rota> _rotaRepository;
+    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
+    private readonly IBaseRepository<Usuario> _usuarioRepository;
+    private readonly IBaseRepository<Motorista> _motoristaRepository;
+    private readonly IBaseRepository<Aluno> _AlunoRepository;
+    private readonly IBaseRepository<AlunoRota> _AlunoRotaRepository;
+    private readonly IRotaHistoricoRepository _rotaHistoricoRepository;
+    public RotaService(
+        IMapper mapper,
+        IUserContext userContext,
+        IBaseRepository<Usuario> usuarioRepository,
+        IBaseRepository<MotoristaRota> motoristaRotaRepository,
+        IBaseRepository<Motorista> motoristaRepository,
+        IBaseRepository<AlunoRota> AlunoRotaRepository,
+        IBaseRepository<Aluno> AlunoRepository,
+        IRotaHistoricoRepository rotaHistoricoRepository,
+        IBaseRepository<Rota> rotaRepository)
+    {
+        _userContext = userContext;
+        _mapper = mapper;
+        _usuarioRepository = usuarioRepository;
+        _motoristaRotaRepository = motoristaRotaRepository;
+        _motoristaRepository = motoristaRepository;
+        _AlunoRotaRepository = AlunoRotaRepository;
+        _AlunoRepository = AlunoRepository;
+        _rotaRepository = rotaRepository;
+        _rotaHistoricoRepository = rotaHistoricoRepository;
+    }
+
+    public async Task<RotaViewModel> AdicionarAsync(RotaAdicionarViewModel rotaAdicionarViewModel)
+    {
+        var model = _mapper.Map<Rota>(rotaAdicionarViewModel);
+        model.EmpresaId = _userContext.Empresa;
+        model.Status = StatusEntityEnum.Ativo;
+        model.TipoRota = rotaAdicionarViewModel.TipoRota;
+
+        await _rotaRepository.AdicionarAsync(model);
+        return _mapper.Map<RotaViewModel>(model); ;
+    }
+
+    public async Task AtualizarAsync(RotaAtualizarViewModel rotaAtualizarViewModel)
+    {
+        var model = await _rotaRepository.BuscarUmAsync(x => x.Id == rotaAtualizarViewModel.Id);
+
+        model.VeiculoId = rotaAtualizarViewModel.VeiculoId.GetValueOrDefault(0) <= 0 ? null : rotaAtualizarViewModel.VeiculoId.Value;
+        model.Nome = rotaAtualizarViewModel.Nome;
+        model.DiaSemana = rotaAtualizarViewModel.DiaSemana;
+        model.Horario = rotaAtualizarViewModel.Horario;
+        model.TipoRota = rotaAtualizarViewModel.TipoRota;
+
+        await _rotaRepository.AtualizarAsync(model);
+    }
+
+    public async Task DeletarAsync(int id)
+    {
+        var model = await _rotaRepository.BuscarUmAsync(x => x.Id == id, w => w.AlunoRotas, z => z.MotoristaRotas);
+
+        model.Status = StatusEntityEnum.Deletado;
+        model.AlunoRotas.ToList().ForEach(item => item.Status = StatusEntityEnum.Deletado);
+        model.MotoristaRotas.ToList().ForEach(item => item.Status = StatusEntityEnum.Deletado);
+
+        await _rotaRepository.AtualizarAsync(model);
+    }
+
+    public async Task<RotaViewModel> ObterAsync(int id)
+    {
+        var response = await _rotaRepository.BuscarUmAsync(x =>
+            x.Id == id && x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo,
+            x => x.AlunoRotas,
+            x => x.Historicos,
+            x => x.Historicos.OrderByDescending(x => x.DataCriacao));
+
+        return _mapper.Map<RotaViewModel>(response);
+    }
+
+    public async Task<RotaDetalheViewModel> ObterDetalheAsync(int id)
+    {
+        var data = await _rotaRepository.BuscarUmAsync(x =>
+            x.Id == id && x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo,
+            x => x.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo),
+            x => x.Historicos.OrderByDescending(x => x.DataCriacao));
+
+        var AlunosId = data.AlunoRotas.Select(x => x.AlunoId);
+        var Alunos = await _AlunoRepository.BuscarAsync(
+            x => AlunosId.Contains(x.Id),
+            x => x.Responsavel,
+            x => x.EnderecoPartida,
+            x => x.EnderecoDestino,
+            x => x.EnderecoRetorno);
+
+        var response = _mapper.Map<RotaDetalheViewModel>(data);
+        response.Alunos = _mapper.Map<List<AlunoDetalheViewModel>>(Alunos);
+
+        var trajetoOnline = await _rotaHistoricoRepository.BuscarUmAsync(x => x.RotaId == id);
+        response.EmAndamento = trajetoOnline is not null && trajetoOnline.Id > 0 && trajetoOnline.DataFim.HasValue == false;
+
+        return response;
+    }
+
+    public async Task<List<RotaViewModel>> ObterAsync()
+    {
+        var Alunos = await _AlunoRepository.BuscarAsync(x => x.ResponsavelId == _userContext.UserId);
+        var AlunosId = Alunos.Select(x => x.Id).ToList();
+
+        var response = await _rotaRepository.BuscarAsync(
+            x => x.EmpresaId == _userContext.Empresa
+                 && x.Status == StatusEntityEnum.Ativo
+                 && x.AlunoRotas.Any(f => AlunosId.Contains(f.AlunoId)),
+            x => x.AlunoRotas,
+            x => x.Historicos.OrderByDescending(x => x.DataCriacao)
+        );
+
+        if (!response.Any(x => x.Historicos.Any()))
+            return default!;
+
+        return _mapper.Map<List<RotaViewModel>>(response);
+    }
+
+    public async Task<List<RotaViewModel>> ObterRotasOnlineAsync()
+    {
+        var Alunos = await _AlunoRepository.BuscarAsync(x => x.ResponsavelId == _userContext.UserId);
+        var AlunosId = Alunos.Select(x => x.Id).ToList();
+
+        var response = await _rotaRepository.BuscarAsync(
+            x => x.EmpresaId == _userContext.Empresa
+                 && x.Status == StatusEntityEnum.Ativo
+                 && x.AlunoRotas.Any(f => AlunosId.Contains(f.AlunoId))
+                 && x.Historicos.Any(z => z.DataFim == null && z.EmAndamento),
+            x => x.AlunoRotas,
+            x => x.Historicos.OrderByDescending(x => x.DataCriacao)
+        );
+
+        if (!response.Any(x => x.Historicos.Any()))
+            return default!;
+
+        return _mapper.Map<List<RotaViewModel>>(response);
+    }
+
+    public async Task<List<RotaViewModel>> ObterPorAlunoIdAsync(int id)
+    {
+        var Alunos = await _AlunoRepository.BuscarAsync(x => x.AlunoRotas.Any(y => y.AlunoId == id), x => x.AlunoRotas);
+        var AlunoRotas = Alunos.SelectMany(x => x.AlunoRotas);
+        var rotasId = AlunoRotas.Select(x => x.RotaId);
+
+        var rotas = await _rotaRepository.BuscarAsync(
+            x => x.Status == StatusEntityEnum.Ativo && rotasId.Contains(x.Id),
+            x => x.Historicos);
+
+        return _mapper.Map<List<RotaViewModel>>(rotas);
+    }
+
+    public async Task<List<RotaViewModel>> ObterRotaDoMotoristaAsync(int usuarioId, bool filtrarApenasHoje = true)
+    {
+        var saoPauloTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
+        var nowUtc = DateTime.UtcNow;
+        var hoje = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, saoPauloTimeZone);
+
+        var diaDaSemanaAtual = (DiaSemanaEnum)(hoje.DayOfWeek + 1); // Para alinhar com o enum
+
+        var motorista = await _motoristaRepository.BuscarUmAsync(x =>
+            x.UsuarioId == usuarioId,
+            x => x.MotoristaRotas.Where(x => x.Status == StatusEntityEnum.Ativo));
+
+        if (motorista.MotoristaRotas is null || !motorista.MotoristaRotas.Any())
+            return Enumerable.Empty<RotaViewModel>().ToList();
+
+        var rotasId = motorista.MotoristaRotas.Select(x => x.RotaId);
+        var rotasDoDiaParaMotorista = await _rotaRepository.BuscarAsync(x =>
+            rotasId.Contains(x.Id) && // Buscando rotas que o MOTORISTA esta cadastrado
+            x.Status == StatusEntityEnum.Ativo && // Rota precisa estar ativa
+                                                  // Logica para buscar as ROTAS apenas do dia de HOJE
+            (filtrarApenasHoje ? (x.DiaSemana == DiaSemanaEnum.Todos) ||
+            (x.DiaSemana == diaDaSemanaAtual) ||
+            (diaDaSemanaAtual >= DiaSemanaEnum.Segunda &&
+            diaDaSemanaAtual <= DiaSemanaEnum.Sexta && x.DiaSemana == DiaSemanaEnum.DiasUteis) : true)
+        );
+
+        // Mapear as rotas filtradas para RotaViewModel
+        var rotasViewModel = _mapper.Map<List<RotaViewModel>>(rotasDoDiaParaMotorista);
+
+        return rotasViewModel;
+    }
+}

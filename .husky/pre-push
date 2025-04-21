@@ -1,0 +1,11 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npm test
+green=`tput setaf 2`
+reset=`tput sgr0`
+echo ""
+echo ""
+echo "${green}Teste executados com sucesso!${reset}"
+echo ""
+echo ""
