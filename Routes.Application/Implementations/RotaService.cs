@@ -18,29 +18,20 @@ public class RotaService : IRotaService
     private readonly IMapper _mapper;
     private readonly IUserContext _userContext;
     private readonly IBaseRepository<Rota> _rotaRepository;
-    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
-    private readonly IBaseRepository<Usuario> _usuarioRepository;
     private readonly IBaseRepository<Motorista> _motoristaRepository;
     private readonly IBaseRepository<Aluno> _AlunoRepository;
-    private readonly IBaseRepository<AlunoRota> _AlunoRotaRepository;
     private readonly IRotaHistoricoRepository _rotaHistoricoRepository;
     public RotaService(
         IMapper mapper,
         IUserContext userContext,
-        IBaseRepository<Usuario> usuarioRepository,
-        IBaseRepository<MotoristaRota> motoristaRotaRepository,
         IBaseRepository<Motorista> motoristaRepository,
-        IBaseRepository<AlunoRota> AlunoRotaRepository,
         IBaseRepository<Aluno> AlunoRepository,
         IRotaHistoricoRepository rotaHistoricoRepository,
         IBaseRepository<Rota> rotaRepository)
     {
         _userContext = userContext;
         _mapper = mapper;
-        _usuarioRepository = usuarioRepository;
-        _motoristaRotaRepository = motoristaRotaRepository;
         _motoristaRepository = motoristaRepository;
-        _AlunoRotaRepository = AlunoRotaRepository;
         _AlunoRepository = AlunoRepository;
         _rotaRepository = rotaRepository;
         _rotaHistoricoRepository = rotaHistoricoRepository;

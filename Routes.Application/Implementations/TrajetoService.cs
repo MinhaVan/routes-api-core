@@ -12,6 +12,7 @@ using Routes.Domain.ViewModels;
 using Routes.Domain.ViewModels.Rota;
 using Routes.Service.Exceptions;
 using Microsoft.Extensions.Logging;
+using Routes.Domain.Interfaces.APIs;
 
 namespace Routes.Service.Implementations;
 
@@ -21,7 +22,7 @@ public class TrajetoService : ITrajetoService
     private readonly ILogger<TrajetoService> _logger;
     private readonly IUserContext _userContext;
     private readonly IBaseRepository<Rota> _rotaRepository;
-    private readonly IBaseRepository<Usuario> _usuarioRepository;
+    private readonly IAuthApi _authApi;
     private readonly IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository;
     private readonly IBaseRepository<Aluno> _alunoRepository;
     private readonly IBaseRepository<Endereco> _enderecoRepository;
@@ -32,7 +33,7 @@ public class TrajetoService : ITrajetoService
         ILogger<TrajetoService> logger,
         IMapper mapper,
         IUserContext userContext,
-        IBaseRepository<Usuario> usuarioRepository,
+        IAuthApi authApi,
         IBaseRepository<AjusteAlunoRota> ajusteAlunoRotaRepository,
         IBaseRepository<Aluno> AlunoRepository,
         IBaseRepository<Endereco> enderecoRepository,
@@ -44,7 +45,7 @@ public class TrajetoService : ITrajetoService
         _logger = logger;
         _userContext = userContext;
         _mapper = mapper;
-        _usuarioRepository = usuarioRepository;
+        _authApi = authApi;
         _enderecoRepository = enderecoRepository;
         _ordemTrajetoRepository = ordemTrajetoRepository;
         _alunoRotaHistoricoRepository = alunoRotaHistoricoRepository;
@@ -445,9 +446,11 @@ public class TrajetoService : ITrajetoService
 
     public async Task<RotaViewModel> RotaOnlineParaMotoristaAsync()
     {
-        var user = _userContext.UserId;
+        var obterUsuarioResponse = await _authApi.ObterUsuarioAsync(_userContext.UserId);
+        if (!obterUsuarioResponse.Sucesso || obterUsuarioResponse.Data == null)
+            throw new BusinessRuleException(obterUsuarioResponse.Mensagem);
 
-        var usuario = await _usuarioRepository.BuscarUmAsync(x => x.Id == user, x => x.Motorista, x => x.Motorista.MotoristaRotas.Where(x => x.Status == StatusEntityEnum.Ativo));
+        var usuario = obterUsuarioResponse.Data;
         var rotasId = usuario.Motorista.MotoristaRotas.Select(x => x.RotaId);
 
         var trajetoOnline = await _rotaHistoricoRepository.BuscarUmAsync(x => rotasId.Contains(x.RotaId) && x.EmAndamento == true && x.DataFim == null, x => x.Rota);
