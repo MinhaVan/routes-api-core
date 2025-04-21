@@ -18,7 +18,7 @@ public static class DbContextExtensions
 
         services.AddDbContext<APIContext>(options =>
         {
-            options.UseNpgsql(connectionString, b => b.MigrationsAssembly("Core.API"));
+            options.UseNpgsql(connectionString, b => b.MigrationsAssembly("Routes.API"));
         });
 
         Console.WriteLine("Configuração de bancos de dados realizada com sucesso!");
