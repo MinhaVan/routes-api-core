@@ -15,7 +15,6 @@ public class MotoristaService : IMotoristaService
     private readonly IMapper _mapper;
     private readonly IUserContext _userContext;
     private readonly IAuthApi _authApi;
-    private readonly IBaseRepository<Usuario> _usuarioRepository;
     private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
     private readonly IBaseRepository<Motorista> _motoristaRepository;
     public MotoristaService(
@@ -29,7 +28,6 @@ public class MotoristaService : IMotoristaService
         _motoristaRepository = motoristaRepository;
         _motoristaRotaRepository = motoristaRotaRepository;
         _authApi = authApi;
-        _usuarioRepository = usuarioRepository;
         _mapper = mapper;
         _userContext = userContext;
     }
@@ -56,25 +54,6 @@ public class MotoristaService : IMotoristaService
         motorista.TipoCNH = usuarioAtualizarViewModel.TipoCNH;
         motorista.Foto = usuarioAtualizarViewModel.Foto;
         await _motoristaRepository.AtualizarAsync(motorista);
-    }
-
-    public async Task DeletarAsync(int id)
-    {
-        var model = await _usuarioRepository.BuscarUmAsync(x => x.Id == id, x => x.Motorista);
-
-        model.Status = StatusEntityEnum.Deletado;
-        model.Motorista.Status = StatusEntityEnum.Deletado;
-
-        await _usuarioRepository.AtualizarAsync(model);
-    }
-
-    public async Task<UsuarioViewModel> Obter(int id)
-        => _mapper.Map<UsuarioViewModel>(await _usuarioRepository.BuscarUmAsync(x => x.Id == id, x => x.Motorista));
-
-    public async Task<PaginadoViewModel<UsuarioViewModel>> Obter(int pagina, int tamanho)
-    {
-        var motoristas = await _usuarioRepository.BuscarPaginadoAsync(pagina, tamanho, x => x.EmpresaId == _userContext.Empresa);
-        return _mapper.Map<PaginadoViewModel<UsuarioViewModel>>(motoristas);
     }
 
     public async Task VincularAsync(MotoristaVincularViewModel request)

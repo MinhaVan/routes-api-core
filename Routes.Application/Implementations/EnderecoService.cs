@@ -6,12 +6,14 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
+using Routes.Domain.Interfaces.APIs;
 using Routes.Domain.Interfaces.Repository;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Routes.Domain.ViewModels.Rota;
 using Routes.Service.Configuration;
+using Routes.Service.Exceptions;
 
 namespace Routes.Service.Implementations;
 
@@ -22,12 +24,12 @@ public class EnderecoService : IEnderecoService
     private readonly IUserContext _userContext;
     private readonly IBaseRepository<Aluno> _alunoRepository;
     private readonly IBaseRepository<Endereco> _enderecoRepository;
-    private readonly IBaseRepository<Usuario> _usuarioRepository;
+    private readonly IAuthApi _authApi;
     private readonly HttpClient _googleMapsCliente;
     public EnderecoService(
         IMapper mapper,
         IBaseRepository<Aluno> alunoRepository,
-        IBaseRepository<Usuario> usuarioRepository,
+        IAuthApi authApi,
         IBaseRepository<Endereco> enderecoRepository,
         SecretManager secretManager,
         IHttpClientFactory httpClientFactory,
@@ -38,7 +40,7 @@ public class EnderecoService : IEnderecoService
         _alunoRepository = alunoRepository;
         _mapper = mapper;
         _userContext = userContext;
-        _usuarioRepository = usuarioRepository;
+        _authApi = authApi;
         _enderecoRepository = enderecoRepository;
     }
 
@@ -109,8 +111,12 @@ public class EnderecoService : IEnderecoService
 
     public async Task<List<EnderecoViewModel>> Obter()
     {
-        var usuario = await _usuarioRepository.BuscarAsync(x => x.Id == _userContext.UserId, y => y.Enderecos);
-        var enderecos = usuario.SelectMany(x => x.Enderecos).Where(x => x.Status == Domain.Enums.StatusEntityEnum.Ativo).ToList();
+        var obterUsuarioResponse = await _authApi.ObterUsuarioAsync(_userContext.UserId);
+        if (!obterUsuarioResponse.Sucesso || obterUsuarioResponse.Data == null)
+            throw new BusinessRuleException(obterUsuarioResponse.Mensagem);
+
+        var usuario = obterUsuarioResponse.Data;
+        var enderecos = usuario.Enderecos.Where(x => x.Status == Domain.Enums.StatusEntityEnum.Ativo).ToList();
         return _mapper.Map<List<EnderecoViewModel>>(enderecos);
     }
 

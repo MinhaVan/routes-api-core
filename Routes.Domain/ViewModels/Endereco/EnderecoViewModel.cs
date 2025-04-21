@@ -13,5 +13,6 @@ public class EnderecoViewModel
     public string Cidade { get; set; }
     public string Estado { get; set; }
     public string Pais { get; set; }
+    public StatusEntityEnum Status { get; set; }
     public TipoEnderecoEnum TipoEndereco { get; set; }
 }

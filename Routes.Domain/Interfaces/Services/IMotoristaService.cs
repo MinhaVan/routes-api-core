@@ -9,7 +9,4 @@ public interface IMotoristaService
     Task DesvincularAsync(MotoristaVincularViewModel request);
     Task<MotoristaViewModel> AdicionarAsync(MotoristaNovoViewModel usuarioAdicionarViewModel);
     Task AtualizarAsync(MotoristaAtualizarViewModel usuarioAdicionarViewModel);
-    Task DeletarAsync(int id);
-    Task<UsuarioViewModel> Obter(int id);
-    Task<PaginadoViewModel<UsuarioViewModel>> Obter(int pagina, int tamanho);
 }

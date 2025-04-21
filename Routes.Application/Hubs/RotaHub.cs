@@ -8,6 +8,7 @@ using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Routes.Domain.ViewModels.WebSocket;
+using Routes.Domain.Interfaces.APIs;
 
 namespace Routes.Service.Hubs;
 
@@ -15,7 +16,7 @@ public class RotaHub : Hub
 {
     private readonly ILogger<RotaHub> _logger;
     private readonly IBaseRepository<Rota> _rotaRepository;
-    private readonly IBaseRepository<Usuario> _usuarioRepository;
+    private readonly IAuthApi _authApi;
     private readonly IRabbitMqRepository _rabbitMqRepository;
     private readonly IRedisRepository _redisRepository;
 
@@ -23,14 +24,14 @@ public class RotaHub : Hub
 
     public RotaHub(
         ILogger<RotaHub> logger,
+        IAuthApi authApi,
         IBaseRepository<Rota> rotaRepository,
-        IBaseRepository<Usuario> usuarioRepository,
         IRabbitMqRepository rabbitMqRepository,
         IRedisRepository redisRepository)
     {
         _logger = logger;
+        _authApi = authApi;
         _rotaRepository = rotaRepository;
-        _usuarioRepository = usuarioRepository;
         _rabbitMqRepository = rabbitMqRepository;
         _redisRepository = redisRepository;
     }
@@ -133,12 +134,13 @@ public class RotaHub : Hub
 
     private async Task<bool> ValidarResponsavel(int responsavelId, int rotaId)
     {
-        var usuario = await _usuarioRepository.BuscarUmAsync(u => u.Id == responsavelId, u => u.Alunos);
+        var obterUsuarioResponse = await _authApi.ObterUsuarioAsync(responsavelId);
         var rota = await _rotaRepository.BuscarUmAsync(r => r.Id == rotaId, r => r.AlunoRotas);
 
-        if (usuario == null || rota == null)
+        if (!obterUsuarioResponse.Sucesso || obterUsuarioResponse.Data == null)
             return false;
 
+        var usuario = obterUsuarioResponse.Data;
         var idsAlunosResponsavel = usuario.Alunos.Select(a => a.Id).ToHashSet();
 
         return rota.AlunoRotas.Any(ar => idsAlunosResponsavel.Contains(ar.AlunoId));

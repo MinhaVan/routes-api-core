@@ -53,22 +53,22 @@ public class MotoristaController : BaseController
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeletarAsync(int id)
     {
-        await _motoristaService.DeletarAsync(id);
-        return Success();
+        // Migrado para a Auth API
+        throw new System.Exception("Migrado para a Auth API");
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> ObterAsync(int id)
     {
-        var motorista = await _motoristaService.Obter(id);
-        return Success(motorista);
+        // Migrado para a Auth API
+        throw new System.Exception("Migrado para a Auth API");
     }
 
     [HttpGet("{pagina}/{tamanho}")]
     public async Task<IActionResult> ObterTodosMotoristasAsync(int pagina, int tamanho)
     {
-        var motoristas = await _motoristaService.Obter(pagina, tamanho);
-        return Success(motoristas);
+        // Migrado para a Auth API
+        throw new System.Exception("Migrado para a Auth API");
     }
 
     [HttpGet("rota/online")]
