@@ -9,15 +9,15 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-COPY ["Routes.API.sln", "."]
+COPY ["Routes.sln", "."]
 COPY ["Routes.API/Routes.API.csproj", "Routes.API/"]
 COPY ["Routes.Domain/Routes.Domain.csproj", "Routes.Domain/"]
-COPY ["Routes.Service/Routes.Service.csproj", "Routes.Service/"]
+COPY ["Routes.Application/Routes.Application.csproj", "Routes.Application/"]
 COPY ["Routes.Data/Routes.Data.csproj", "Routes.Data/"]
 COPY ["Routes.Tests/Routes.Tests.csproj", "Routes.Tests/"]
 
 # Restaura as dependências
-RUN dotnet restore "Routes.API.sln"
+RUN dotnet restore "Routes.sln"
 
 # Copia o restante do código e realiza o build
 COPY . .
