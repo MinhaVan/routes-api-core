@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 var environment = builder.Environment.EnvironmentName;
@@ -57,6 +58,7 @@ app.MapHub<RotaHub>("websocket/rotas");
 app.UseIpRateLimiting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapMetrics();
 app.UseCors("CorsPolicy");
 app.UseWebSockets();
 app.MapControllers();
