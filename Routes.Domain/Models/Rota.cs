@@ -18,5 +18,4 @@ public class Rota : Entity
     public virtual List<MotoristaRota> MotoristaRotas { get; set; }
     public virtual List<OrdemTrajeto> OrdemTrajetos { get; set; }
     public virtual Veiculo Veiculo { get; set; }
-    public virtual Empresa Empresa { get; set; }
 }

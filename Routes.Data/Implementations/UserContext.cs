@@ -14,6 +14,22 @@ public class UserContext : IUserContext
         _httpContextAccessor = httpContextAccessor;
     }
 
+    public string Token
+    {
+        get
+        {
+            try
+            {
+                var authorizationHeader = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                return authorizationHeader;
+            }
+            catch (Exception)
+            {
+                throw new UnauthorizedAccessException("Erro ao acessar o header Authorization.");
+            }
+        }
+    }
+
     public int Empresa
     {
         get

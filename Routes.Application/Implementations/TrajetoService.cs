@@ -23,22 +23,24 @@ public class TrajetoService : ITrajetoService
     private readonly IUserContext _userContext;
     private readonly IBaseRepository<Rota> _rotaRepository;
     private readonly IAuthApi _authApi;
+    private readonly IPessoasAPI _pessoasAPI;
     private readonly IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository;
-    private readonly IBaseRepository<Aluno> _alunoRepository;
     private readonly IBaseRepository<Endereco> _enderecoRepository;
     private readonly IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository;
     private readonly IBaseRepository<AlunoRotaHistorico> _alunoRotaHistoricoRepository;
     private readonly IRotaHistoricoRepository _rotaHistoricoRepository;
+    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
     public TrajetoService(
         ILogger<TrajetoService> logger,
         IMapper mapper,
         IUserContext userContext,
         IAuthApi authApi,
+        IPessoasAPI pessoasAPI,
         IBaseRepository<AjusteAlunoRota> ajusteAlunoRotaRepository,
-        IBaseRepository<Aluno> AlunoRepository,
         IBaseRepository<Endereco> enderecoRepository,
         IRotaHistoricoRepository rotaHistoricoRepository,
         IBaseRepository<OrdemTrajeto> ordemTrajetoRepository,
+        IBaseRepository<MotoristaRota> motoristaRotaRepository,
         IBaseRepository<AlunoRotaHistorico> alunoRotaHistoricoRepository,
         IBaseRepository<Rota> rotaRepository)
     {
@@ -46,11 +48,12 @@ public class TrajetoService : ITrajetoService
         _userContext = userContext;
         _mapper = mapper;
         _authApi = authApi;
+        _pessoasAPI = pessoasAPI;
         _enderecoRepository = enderecoRepository;
         _ordemTrajetoRepository = ordemTrajetoRepository;
         _alunoRotaHistoricoRepository = alunoRotaHistoricoRepository;
+        _motoristaRotaRepository = motoristaRotaRepository;
         _ajusteAlunoRotaRepository = ajusteAlunoRotaRepository;
-        _alunoRepository = AlunoRepository;
         _rotaRepository = rotaRepository;
         _rotaHistoricoRepository = rotaHistoricoRepository;
     }
@@ -66,7 +69,7 @@ public class TrajetoService : ITrajetoService
             if (alunoRotaHistorico is not null && alunoRotaHistorico.EntrouNaVan == alunoEntrouNaVan)
                 return;
 
-            var aluno = await _alunoRepository.ObterPorIdAsync(alunoId);
+            var aluno = await _pessoasAPI.ObterAlunoPorIdAsync(alunoId);
             _ = aluno ?? throw new BusinessRuleException("Aluno não encontrado!");
 
             if (alunoRotaHistorico is not null)
@@ -80,7 +83,7 @@ public class TrajetoService : ITrajetoService
                 {
                     EntrouNaVan = alunoEntrouNaVan,
                     RotaHistoricoId = trajetoEmAndamento.Id,
-                    AlunoId = aluno.Id
+                    AlunoId = aluno.Data.Id
                 };
 
                 await _alunoRotaHistoricoRepository.AdicionarAsync(model);
@@ -183,7 +186,10 @@ public class TrajetoService : ITrajetoService
         return _mapper.Map<RotaHistoricoViewModel>(trajetoEmAndamento);
     }
 
-    private List<Marcador> ObterMarcadorPorRotaDirecao(IEnumerable<Aluno> alunos, TipoRotaEnum tipoRota, IEnumerable<AjusteAlunoRota> ajusteAlunoRota = null)
+    private List<Marcador> ObterMarcadorPorRotaDirecao(
+        IEnumerable<AlunoViewModel> alunos,
+        TipoRotaEnum tipoRota,
+        IEnumerable<AjusteAlunoRota> ajusteAlunoRota = null)
     {
         var marcadores = new Dictionary<string, Marcador>();
 
@@ -333,10 +339,8 @@ public class TrajetoService : ITrajetoService
         var rota = await _rotaRepository.BuscarUmAsync(x => x.Id == rotaId, z => z.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo));
 
         var alunosId = rota.AlunoRotas.Select(x => x.AlunoId).ToList();
-        var alunos = await _alunoRepository.BuscarAsync(x => alunosId.Contains(x.Id),
-            z => z.EnderecoPartida,
-            z => z.EnderecoDestino,
-            z => z.EnderecoRetorno);
+        var alunosResponse = await _pessoasAPI.ObterAlunoPorIdAsync(alunosId);
+        var alunos = alunosResponse.Data;
 
         var ajusteAlunoRota = await _ajusteAlunoRotaRepository
             .BuscarAsync(x => alunosId.Contains(x.AlunoId) && x.RotaId == rotaId,
@@ -367,18 +371,14 @@ public class TrajetoService : ITrajetoService
 
         var alunosId = rota.AlunoRotas.Select(x => x.AlunoId).ToList();
 
-        var alunos = await _alunoRepository.BuscarAsync(x =>
-            alunosId.Contains(x.Id),
-            z => z.EnderecoPartida,
-            z => z.EnderecoDestino,
-            z => z.EnderecoRetorno);
+        var alunosResponse = await _pessoasAPI.ObterAlunoPorIdAsync(alunosId);
+        var alunos = alunosResponse.Data;
 
         var ordemTrajeto = await _ordemTrajetoRepository.BuscarUmAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo, x => x.Marcadores);
         if (ordemTrajeto is null)
         {
             var saoPauloTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
             var nowUtc = DateTime.UtcNow;
-
 
             var ajusteAlunoRota = await _ajusteAlunoRotaRepository
                 .BuscarAsync(x =>
@@ -451,9 +451,22 @@ public class TrajetoService : ITrajetoService
             throw new BusinessRuleException(obterUsuarioResponse.Mensagem);
 
         var usuario = obterUsuarioResponse.Data;
-        var rotasId = usuario.Motorista.MotoristaRotas.Select(x => x.RotaId);
 
-        var trajetoOnline = await _rotaHistoricoRepository.BuscarUmAsync(x => rotasId.Contains(x.RotaId) && x.EmAndamento == true && x.DataFim == null, x => x.Rota);
+        var obterMotoristaPorIdResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(usuario.Id);
+        if (!obterMotoristaPorIdResponse.Sucesso || obterMotoristaPorIdResponse.Data == null)
+            throw new BusinessRuleException(obterMotoristaPorIdResponse.Mensagem);
+
+        var motorista = obterMotoristaPorIdResponse.Data;
+        var motoristaRotas = await _motoristaRotaRepository.BuscarAsync(x => x.MotoristaId == motorista.Id, z => z.Rota);
+        var rotasId = motoristaRotas.Select(x => x.RotaId);
+
+        var trajetoOnline = await _rotaHistoricoRepository.BuscarUmAsync(x =>
+            rotasId.Contains(x.RotaId) &&
+            x.EmAndamento == true &&
+            x.DataFim == null,
+            x => x.Rota
+        );
+
         if (trajetoOnline is not null && trajetoOnline.Id > 0)
         {
             var viewModel = _mapper.Map<RotaViewModel>(trajetoOnline.Rota);

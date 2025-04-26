@@ -10,13 +10,5 @@ public class EnderecoConfiguration : IEntityTypeConfiguration<Endereco>
     {
         modelBuilder.ToTable("endereco");
         modelBuilder.ConfigureBaseEntity();
-
-        modelBuilder.HasOne(x => x.Empresa)
-            .WithMany(y => y.Enderecos)
-            .HasForeignKey(x => x.EmpresaId);
-
-        modelBuilder.HasOne(x => x.Usuario)
-            .WithMany(y => y.Enderecos)
-            .HasForeignKey(x => x.UsuarioId);
     }
 }

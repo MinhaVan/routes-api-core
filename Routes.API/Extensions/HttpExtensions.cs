@@ -10,13 +10,11 @@ public static class HttpExtensions
 {
     public static IServiceCollection AddCustomHttp(this IServiceCollection services, SecretManager secretManager)
     {
-        var url = secretManager.Asaas.Url;
-        var asaasToken = secretManager.Asaas.AcessToken;
         services.AddHttpClient("api-asaas", client =>
         {
-            client.BaseAddress = new Uri(url);
+            client.BaseAddress = new Uri(secretManager.Asaas.Url);
             client.DefaultRequestHeaders.Add("User-Agent", "VanCoreAPI");
-            client.DefaultRequestHeaders.Add("access_token", asaasToken);
+            client.DefaultRequestHeaders.Add("access_token", secretManager.Asaas.AcessToken);
             client.DefaultRequestHeaders.Add("Accept", "application/json");
         });
 
@@ -29,6 +27,12 @@ public static class HttpExtensions
         services.AddHttpClient("api-googlemaps", client =>
         {
             client.BaseAddress = new Uri(secretManager.Google.BaseUrl);
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
+
+        services.AddHttpClient("api-pessoas", client =>
+        {
+            client.BaseAddress = new Uri(secretManager.URL.PessoasAPI);
             client.DefaultRequestHeaders.Add("Accept", "application/json");
         });
 

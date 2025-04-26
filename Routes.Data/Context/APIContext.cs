@@ -28,12 +28,10 @@ public class APIContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new MotoristaRotaConfiguration());
-        modelBuilder.ApplyConfiguration(new MotoristaConfiguration());
         modelBuilder.ApplyConfiguration(new AlunoRotaConfiguration());
         modelBuilder.ApplyConfiguration(new VeiculoConfiguration());
         modelBuilder.ApplyConfiguration(new OrdemTrajetoConfiguration());
         modelBuilder.ApplyConfiguration(new OrdemTrajetoMarcadorConfiguration());
-        modelBuilder.ApplyConfiguration(new EmpresaConfiguration());
         modelBuilder.ApplyConfiguration(new RotaConfiguration());
         modelBuilder.ApplyConfiguration(new RotaHistoricoConfiguration());
         modelBuilder.ApplyConfiguration(new AlunoRotaHistoricoConfiguration());
@@ -61,18 +59,13 @@ public class APIContext : DbContext
         }
     }
 
-    public DbSet<AjusteAlunoRota> AjusteAlunoRotas { get; set; }
-    public DbSet<Usuario> Usuarios { get; set; }
-    public DbSet<Aluno> Alunos { get; set; }
-    public DbSet<Rota> Rotas { get; set; }
     public DbSet<RotaHistorico> RotaHistoricos { get; set; }
+    public DbSet<AjusteAlunoRota> AjusteAlunoRotas { get; set; }
+    public DbSet<Rota> Rotas { get; set; }
     public DbSet<LocalizacaoTrajeto> LocalizacaoTrajetos { get; set; }
     public DbSet<Endereco> Enderecos { get; set; }
     public DbSet<AlunoRota> AlunoRotas { get; set; }
     public DbSet<MotoristaRota> MotoristaRotas { get; set; }
-    public DbSet<Motorista> Motoristas { get; set; }
-    public DbSet<Permissao> Permissoes { get; set; }
-    public DbSet<UsuarioPermissao> UsuarioPermissoes { get; set; }
     public DbSet<AlunoRotaHistorico> AlunoRotaHistoricos { get; set; }
     public DbSet<OrdemTrajeto> OrdemTrajetos { get; set; }
 }

@@ -10,56 +10,37 @@ using Routes.Service.Exceptions;
 
 namespace Routes.Service.Implementations;
 
-public class MotoristaService : IMotoristaService
+public class MotoristaRotaService : IMotoristaRotaService
 {
     private readonly IMapper _mapper;
     private readonly IUserContext _userContext;
     private readonly IAuthApi _authApi;
     private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
-    private readonly IBaseRepository<Motorista> _motoristaRepository;
-    public MotoristaService(
+    private readonly IPessoasAPI _pessoasAPI;
+    public MotoristaRotaService(
         IMapper mapper,
         IAuthApi authApi,
-        IBaseRepository<Usuario> usuarioRepository,
+        IPessoasAPI pessoasAPI,
         IBaseRepository<MotoristaRota> motoristaRotaRepository,
-        IBaseRepository<Motorista> motoristaRepository,
         IUserContext userContext)
     {
-        _motoristaRepository = motoristaRepository;
+        _pessoasAPI = pessoasAPI;
         _motoristaRotaRepository = motoristaRotaRepository;
         _authApi = authApi;
         _mapper = mapper;
         _userContext = userContext;
     }
 
-    public async Task<MotoristaViewModel> AdicionarAsync(MotoristaNovoViewModel usuarioNovoViewModel)
-    {
-        usuarioNovoViewModel.Perfil = PerfilEnum.Motorista;
-        var response = await _authApi.RegistrarAsync(_mapper.Map<UsuarioNovoViewModel>(usuarioNovoViewModel));
-
-        var model = _mapper.Map<Motorista>(usuarioNovoViewModel);
-        model.UsuarioId = response.Data.Id;
-        await _motoristaRepository.AdicionarAsync(model);
-
-        return _mapper.Map<MotoristaViewModel>(response);
-    }
-
-    public async Task AtualizarAsync(MotoristaAtualizarViewModel usuarioAtualizarViewModel)
-    {
-        await _authApi.AtualizarAsync(usuarioAtualizarViewModel);
-
-        var motorista = await _motoristaRepository.BuscarUmAsync(x => x.UsuarioId == usuarioAtualizarViewModel.Id);
-        motorista.CNH = usuarioAtualizarViewModel.CNH;
-        motorista.Vencimento = usuarioAtualizarViewModel.Vencimento;
-        motorista.TipoCNH = usuarioAtualizarViewModel.TipoCNH;
-        motorista.Foto = usuarioAtualizarViewModel.Foto;
-        await _motoristaRepository.AtualizarAsync(motorista);
-    }
-
     public async Task VincularAsync(MotoristaVincularViewModel request)
     {
         // TODO: Caso o usuario que está fzendo a acao nao for o motorista, vai ficar errado o vinculo da rota x usuario
-        var motorista = await _motoristaRepository.BuscarUmAsync(x => x.UsuarioId == _userContext.UserId);
+        var motoristaResponse = await _pessoasAPI.ObterMotoristaPorUsuarioIdAsync(_userContext.UserId);
+        if (motoristaResponse is null || motoristaResponse.Data is null)
+        {
+            throw new BusinessRuleException(motoristaResponse.Mensagem);
+        }
+
+        var motorista = motoristaResponse.Data;
         var configuracao = await _motoristaRotaRepository.BuscarUmAsync(x =>
             x.MotoristaId == motorista.Id &&
             x.RotaId == request.RotaId);
@@ -90,7 +71,13 @@ public class MotoristaService : IMotoristaService
     public async Task DesvincularAsync(MotoristaVincularViewModel request)
     {
         // TODO: Caso o usuario que está fzendo a acao nao for o motorista, vai ficar errado o vinculo da rota x usuario
-        var motorista = await _motoristaRepository.BuscarUmAsync(x => x.UsuarioId == _userContext.UserId);
+        var motoristaResponse = await _pessoasAPI.ObterMotoristaPorUsuarioIdAsync(_userContext.UserId);
+        if (motoristaResponse is null || motoristaResponse.Data is null)
+        {
+            throw new BusinessRuleException(motoristaResponse.Mensagem);
+        }
+
+        var motorista = motoristaResponse.Data;
         var configuracao = await _motoristaRotaRepository
             .BuscarUmAsync(x => x.MotoristaId == motorista.Id && x.RotaId == request.RotaId);
 

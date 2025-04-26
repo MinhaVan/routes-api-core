@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
-using Routes.Domain.ViewModels.Rota;
 
 namespace Routes.Domain.Interfaces.Services;
 
@@ -13,5 +12,4 @@ public interface IEnderecoService
     Task DeletarAsync(int id);
     Task<EnderecoViewModel> Obter(int id);
     Task<List<EnderecoViewModel>> Obter();
-    Task<Marcador> ObterMarcadorAsync(string endereco);
 }

@@ -11,6 +11,5 @@ namespace Routes.Domain.Models
         public string Observacao { get; set; }
         //
         public virtual RotaHistorico RotaHistorico { get; set; }
-        public virtual Aluno Aluno { get; set; }
     }
 }

@@ -13,9 +13,5 @@ public class AlunoRotaConfiguration : IEntityTypeConfiguration<AlunoRota>
         modelBuilder.HasOne(x => x.Rota)
             .WithMany(y => y.AlunoRotas)
             .HasForeignKey(x => x.RotaId);
-
-        modelBuilder.HasOne(x => x.Aluno)
-            .WithMany(y => y.AlunoRotas)
-            .HasForeignKey(x => x.AlunoId);
     }
 }

@@ -9,7 +9,6 @@ using FluentValidation;
 using System.Reflection;
 using StackExchange.Redis;
 using Routes.Service.Configuration;
-// using Routes.Service.Workers;
 
 namespace Routes.API.Extensions;
 
@@ -20,13 +19,11 @@ public static class ServiceExtensions
         services.AddHttpContextAccessor();
         services.AddCache(secretManager);
 
-        services.AddScoped<IMotoristaService, MotoristaService>();
         services.AddScoped<IEnderecoService, EnderecoService>();
         services.AddScoped<IRotaService, RotaService>();
         services.AddScoped<ITrajetoService, TrajetoService>();
         services.AddScoped<IAjusteEnderecoService, AjusteEnderecoService>();
         services.AddScoped<IVeiculoService, VeiculoService>();
-
 
         Console.WriteLine("Configuração das services realizada com sucesso!");
 
@@ -68,6 +65,7 @@ public static class ServiceExtensions
         });
 
         services.AddSignalR();
+        services.AddHttpClient();
 
         services.AddFluentValidationAutoValidation()
                 .AddFluentValidationClientsideAdapters();

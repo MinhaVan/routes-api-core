@@ -10,6 +10,7 @@ using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Routes.Domain.Interfaces.APIs;
 
 namespace Routes.Service.Implementations;
 
@@ -18,22 +19,22 @@ public class RotaService : IRotaService
     private readonly IMapper _mapper;
     private readonly IUserContext _userContext;
     private readonly IBaseRepository<Rota> _rotaRepository;
-    private readonly IBaseRepository<Motorista> _motoristaRepository;
-    private readonly IBaseRepository<Aluno> _AlunoRepository;
+    private readonly IPessoasAPI _pessoasAPI;
     private readonly IRotaHistoricoRepository _rotaHistoricoRepository;
+    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
     public RotaService(
         IMapper mapper,
         IUserContext userContext,
-        IBaseRepository<Motorista> motoristaRepository,
-        IBaseRepository<Aluno> AlunoRepository,
+        IPessoasAPI pessoasAPI,
         IRotaHistoricoRepository rotaHistoricoRepository,
+        IBaseRepository<MotoristaRota> motoristaRotaRepository,
         IBaseRepository<Rota> rotaRepository)
     {
         _userContext = userContext;
         _mapper = mapper;
-        _motoristaRepository = motoristaRepository;
-        _AlunoRepository = AlunoRepository;
+        _pessoasAPI = pessoasAPI;
         _rotaRepository = rotaRepository;
+        _motoristaRotaRepository = motoristaRotaRepository;
         _rotaHistoricoRepository = rotaHistoricoRepository;
     }
 
@@ -85,21 +86,19 @@ public class RotaService : IRotaService
 
     public async Task<RotaDetalheViewModel> ObterDetalheAsync(int id)
     {
-        var data = await _rotaRepository.BuscarUmAsync(x =>
+        var rotaResponse = _rotaRepository.BuscarUmAsync(x =>
             x.Id == id && x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo,
             x => x.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo),
             x => x.Historicos.OrderByDescending(x => x.DataCriacao));
 
-        var AlunosId = data.AlunoRotas.Select(x => x.AlunoId);
-        var Alunos = await _AlunoRepository.BuscarAsync(
-            x => AlunosId.Contains(x.Id),
-            x => x.Responsavel,
-            x => x.EnderecoPartida,
-            x => x.EnderecoDestino,
-            x => x.EnderecoRetorno);
+        var alunosResponse = _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
+        await Task.WhenAll(rotaResponse, alunosResponse);
 
-        var response = _mapper.Map<RotaDetalheViewModel>(data);
-        response.Alunos = _mapper.Map<List<AlunoDetalheViewModel>>(Alunos);
+        var alunos = alunosResponse.Result;
+        var rota = rotaResponse.Result;
+
+        var response = _mapper.Map<RotaDetalheViewModel>(rota);
+        response.Alunos = _mapper.Map<List<AlunoDetalheViewModel>>(alunos);
 
         var trajetoOnline = await _rotaHistoricoRepository.BuscarUmAsync(x => x.RotaId == id);
         response.EmAndamento = trajetoOnline is not null && trajetoOnline.Id > 0 && trajetoOnline.DataFim.HasValue == false;
@@ -109,8 +108,8 @@ public class RotaService : IRotaService
 
     public async Task<List<RotaViewModel>> ObterAsync()
     {
-        var Alunos = await _AlunoRepository.BuscarAsync(x => x.ResponsavelId == _userContext.UserId);
-        var AlunosId = Alunos.Select(x => x.Id).ToList();
+        var Alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
+        var AlunosId = Alunos.Data.Select(x => x.Id).ToList();
 
         var response = await _rotaRepository.BuscarAsync(
             x => x.EmpresaId == _userContext.Empresa
@@ -128,13 +127,13 @@ public class RotaService : IRotaService
 
     public async Task<List<RotaViewModel>> ObterRotasOnlineAsync()
     {
-        var Alunos = await _AlunoRepository.BuscarAsync(x => x.ResponsavelId == _userContext.UserId);
-        var AlunosId = Alunos.Select(x => x.Id).ToList();
+        var alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
+        var alunosId = alunos.Data.Select(x => x.Id).ToList();
 
         var response = await _rotaRepository.BuscarAsync(
             x => x.EmpresaId == _userContext.Empresa
                  && x.Status == StatusEntityEnum.Ativo
-                 && x.AlunoRotas.Any(f => AlunosId.Contains(f.AlunoId))
+                 && x.AlunoRotas.Any(f => alunosId.Contains(f.AlunoId))
                  && x.Historicos.Any(z => z.DataFim == null && z.EmAndamento),
             x => x.AlunoRotas,
             x => x.Historicos.OrderByDescending(x => x.DataCriacao)
@@ -148,9 +147,8 @@ public class RotaService : IRotaService
 
     public async Task<List<RotaViewModel>> ObterPorAlunoIdAsync(int id)
     {
-        var Alunos = await _AlunoRepository.BuscarAsync(x => x.AlunoRotas.Any(y => y.AlunoId == id), x => x.AlunoRotas);
-        var AlunoRotas = Alunos.SelectMany(x => x.AlunoRotas);
-        var rotasId = AlunoRotas.Select(x => x.RotaId);
+        var alunos = await _rotaRepository.BuscarAsync(x => x.AlunoRotas.Any(y => y.AlunoId == id), x => x.AlunoRotas);
+        var rotasId = alunos.SelectMany(x => x.AlunoRotas).Select(x => x.RotaId);
 
         var rotas = await _rotaRepository.BuscarAsync(
             x => x.Status == StatusEntityEnum.Ativo && rotasId.Contains(x.Id),
@@ -167,14 +165,13 @@ public class RotaService : IRotaService
 
         var diaDaSemanaAtual = (DiaSemanaEnum)(hoje.DayOfWeek + 1); // Para alinhar com o enum
 
-        var motorista = await _motoristaRepository.BuscarUmAsync(x =>
-            x.UsuarioId == usuarioId,
-            x => x.MotoristaRotas.Where(x => x.Status == StatusEntityEnum.Ativo));
+        var motorista = await _pessoasAPI.ObterMotoristaPorIdAsync(usuarioId);
+        var motoristaRotas = await _motoristaRotaRepository.BuscarAsync(x => x.MotoristaId == motorista.Data.Id && x.Status == StatusEntityEnum.Ativo);
 
-        if (motorista.MotoristaRotas is null || !motorista.MotoristaRotas.Any())
+        if (motoristaRotas is null || !motoristaRotas.Any())
             return Enumerable.Empty<RotaViewModel>().ToList();
 
-        var rotasId = motorista.MotoristaRotas.Select(x => x.RotaId);
+        var rotasId = motoristaRotas.Select(x => x.RotaId);
         var rotasDoDiaParaMotorista = await _rotaRepository.BuscarAsync(x =>
             rotasId.Contains(x.Id) && // Buscando rotas que o MOTORISTA esta cadastrado
             x.Status == StatusEntityEnum.Ativo && // Rota precisa estar ativa

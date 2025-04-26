@@ -27,6 +27,13 @@ public class BaseRepository<T> : IBaseRepository<T> where T : Entity
         return await _dbSet.FindAsync(id);
     }
 
+    public async Task DeletarAsync(int id)
+    {
+        await _dbSet
+            .Where(e => EF.Property<int>(e, "Id") == id)
+            .ExecuteUpdateAsync(e => e.SetProperty(e => EF.Property<Domain.Enums.StatusEntityEnum>(e, "Status"), Domain.Enums.StatusEntityEnum.Deletado));
+    }
+
     public async Task<IEnumerable<T>> ObterTodosAsync()
     {
         return await _dbSet.AsSplitQuery().ToListAsync();

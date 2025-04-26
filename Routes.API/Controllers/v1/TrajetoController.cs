@@ -82,4 +82,9 @@ public class TrajetoController : BaseController
         return Success(response);
     }
 
+    [HttpGet("rota/online")]
+    public async Task<IActionResult> RotaOnlineAsync()
+    {
+        return Success(await _trajetoService.RotaOnlineParaMotoristaAsync());
+    }
 }

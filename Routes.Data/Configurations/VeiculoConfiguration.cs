@@ -10,9 +10,6 @@ public class VeiculoConfiguration : IEntityTypeConfiguration<Veiculo>
     {
         modelBuilder.ConfigureBaseEntity();
         modelBuilder.ToTable("veiculos");
-        modelBuilder.HasOne(x => x.Empresa)
-            .WithMany(y => y.Veiculos)
-            .HasForeignKey(x => x.EmpresaId);
         modelBuilder.HasMany(x => x.Rotas)
             .WithOne(y => y.Veiculo)
             .HasForeignKey(x => x.VeiculoId);

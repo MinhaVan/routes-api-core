@@ -12,6 +12,7 @@ using Routes.Domain.ViewModels.Rota;
 using Routes.Service.Exceptions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Routes.Domain.Interfaces.APIs;
 
 namespace Routes.Service.Implementations;
 
@@ -20,17 +21,17 @@ public class AjusteEnderecoService : IAjusteEnderecoService
     private readonly ILogger<AjusteEnderecoService> _logger;
     private readonly IMapper _mapper;
     private readonly IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository;
-    private readonly IBaseRepository<Aluno> _AlunoRepository;
+    private readonly IPessoasAPI _pessoasAPI;
     public AjusteEnderecoService(
         IMapper mapper,
+        IPessoasAPI pessoasAPI,
         ILogger<AjusteEnderecoService> logger,
-        IBaseRepository<AjusteAlunoRota> ajusteAlunoRotaRepository,
-        IBaseRepository<Aluno> AlunoRepository)
+        IBaseRepository<AjusteAlunoRota> ajusteAlunoRotaRepository)
     {
         _logger = logger;
         _mapper = mapper;
+        _pessoasAPI = pessoasAPI;
         _ajusteAlunoRotaRepository = ajusteAlunoRotaRepository;
-        _AlunoRepository = AlunoRepository;
     }
 
     public async Task<List<RotaAjusteEnderecoViewModel>> ObterAjusteEnderecoAsync(int AlunoId, int rotaId)
@@ -51,7 +52,7 @@ public class AjusteEnderecoService : IAjusteEnderecoService
     {
         try
         {
-            var aluno = await _AlunoRepository.ObterPorIdAsync(alterarEnderecoViewModel.AlunoId);
+            var aluno = await _pessoasAPI.ObterAlunoPorIdAsync(alterarEnderecoViewModel.AlunoId);
             if (aluno is null)
             {
                 _logger.LogInformation("[AdicionarAjusteEnderecoAsync] Aluno com identificador {0} não encontrado.", alterarEnderecoViewModel.AlunoId);
@@ -118,8 +119,6 @@ public class AjusteEnderecoService : IAjusteEnderecoService
             ajusteAlunoRota.NovoEnderecoDestinoId = alterarAjusteEnderecoViewModel.EnderecoDestinoId;
             ajusteAlunoRota.NovoEnderecoRetornoId = alterarAjusteEnderecoViewModel.EnderecoRetornoId;
             ajusteAlunoRota.NovoEnderecoPartidaId = alterarAjusteEnderecoViewModel.EnderecoPartidaId;
-
-
             ajusteAlunoRota.Status = alterarAjusteEnderecoViewModel.Deletado ? StatusEntityEnum.Deletado : StatusEntityEnum.Ativo;
 
             await _ajusteAlunoRotaRepository.AtualizarAsync(ajusteAlunoRota);

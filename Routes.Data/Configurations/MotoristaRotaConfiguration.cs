@@ -13,9 +13,5 @@ public class MotoristaRotaConfiguration : IEntityTypeConfiguration<MotoristaRota
         modelBuilder.HasOne(x => x.Rota)
             .WithMany(y => y.MotoristaRotas)
             .HasForeignKey(x => x.RotaId);
-
-        modelBuilder.HasOne(x => x.Motorista)
-            .WithMany(y => y.MotoristaRotas)
-            .HasForeignKey(x => x.MotoristaId);
     }
 }

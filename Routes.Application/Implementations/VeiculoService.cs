@@ -2,10 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Routes.Domain.Interfaces.APIs;
 using Routes.Domain.Interfaces.Repository;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
+using Routes.Service.Exceptions;
 
 namespace Routes.Service.Implementations;
 
@@ -13,35 +15,34 @@ public class VeiculoService : IVeiculoService
 {
     private readonly IMapper _mapper;
     private readonly IUserContext _userContext;
+    private readonly IPessoasAPI _pessoasAPI;
     private readonly IBaseRepository<Veiculo> _veiculoRepository;
     private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
-    public VeiculoService(IMapper mapper, IUserContext userContext, IBaseRepository<Veiculo> veiculoRepository, IBaseRepository<MotoristaRota> motoristaRotaRepository)
+    public VeiculoService(
+        IMapper mapper,
+        IUserContext userContext,
+        IPessoasAPI pessoasAPI,
+        IBaseRepository<Veiculo> veiculoRepository,
+        IBaseRepository<MotoristaRota> motoristaRotaRepository)
     {
         _motoristaRotaRepository = motoristaRotaRepository;
         _userContext = userContext;
         _mapper = mapper;
+        _pessoasAPI = pessoasAPI;
         _veiculoRepository = veiculoRepository;
     }
 
     public async Task AdicionarAsync(List<VeiculoAdicionarViewModel> veiculosViewModels)
     {
         var veiculos = _mapper.Map<List<Veiculo>>(veiculosViewModels);
-        foreach (var item in veiculos)
-        {
-            item.EmpresaId = _userContext.Empresa;
-        }
-
+        await Parallel.ForEachAsync(veiculos, async (item, token) => item.EmpresaId = _userContext.Empresa);
         await _veiculoRepository.AdicionarAsync(veiculos);
     }
 
     public async Task AtualizarAsync(List<VeiculoAtualizarViewModel> veiculosViewModels)
     {
         var veiculos = _mapper.Map<List<Veiculo>>(veiculosViewModels);
-        foreach (var item in veiculos)
-        {
-            item.EmpresaId = _userContext.Empresa;
-        }
-
+        await Parallel.ForEachAsync(veiculos, async (item, token) => item.EmpresaId = _userContext.Empresa);
         await _veiculoRepository.AtualizarAsync(veiculos);
     }
 
@@ -63,15 +64,22 @@ public class VeiculoService : IVeiculoService
         var veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == motoristaId && x.EmpresaId == _userContext.Empresa);
 
         var configuracao = await _motoristaRotaRepository.BuscarUmAsync(x =>
-            x.MotoristaId == motoristaId && x.RotaId == rotaId,
-            x => x.Motorista, x => x.Motorista.Usuario);
+            x.MotoristaId == motoristaId && x.RotaId == rotaId);
 
+        //x => x.Motorista, x => x.Motorista.Usuario
+        var motoristaResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(configuracao.MotoristaId);
+        if (motoristaResponse == null)
+        {
+            throw new BusinessRuleException(motoristaResponse.Mensagem);
+        }
+
+        var motorista = motoristaResponse.Data;
         var dto = _mapper.Map<VeiculoViewModel>(veiculo);
-        dto.Motorista = _mapper.Map<MotoristaViewModel>(configuracao.Motorista.Usuario);
-        dto.Motorista.CNH = configuracao.Motorista.CNH;
-        dto.Motorista.Vencimento = configuracao.Motorista.Vencimento;
-        dto.Motorista.TipoCNH = configuracao.Motorista.TipoCNH;
-        dto.Motorista.Foto = configuracao.Motorista.Foto;
+        dto.Motorista = _mapper.Map<MotoristaViewModel>(motorista);
+        dto.Motorista.CNH = motorista.CNH;
+        dto.Motorista.Vencimento = motorista.Vencimento;
+        dto.Motorista.TipoCNH = motorista.TipoCNH;
+        dto.Motorista.Foto = motorista.Foto;
 
         return dto;
     }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Routes.Domain.Models;
-using Routes.Domain.ViewModels;
 
 namespace Routes.Domain.Interfaces.Repository;
 
@@ -19,4 +18,5 @@ public interface IBaseRepository<T> where T : Entity
     Task AtualizarAsync(T entity);
     Task AtualizarAsync(IEnumerable<T> entities);
     Task RemoverAsync(T entity);
+    Task DeletarAsync(int id);
 }

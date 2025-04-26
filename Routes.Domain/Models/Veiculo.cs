@@ -14,6 +14,5 @@ public class Veiculo : Entity
     public TipoVeiculoEnum TipoVeiculo { get; set; }
     public int EmpresaId { get; set; }
     //
-    public virtual Empresa Empresa { get; set; }
     public virtual List<Rota> Rotas { get; set; }
 }

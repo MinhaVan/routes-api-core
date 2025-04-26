@@ -22,13 +22,11 @@ public class EnderecoService : IEnderecoService
     private readonly IMapper _mapper;
     private readonly SecretManager _secretManager;
     private readonly IUserContext _userContext;
-    private readonly IBaseRepository<Aluno> _alunoRepository;
     private readonly IBaseRepository<Endereco> _enderecoRepository;
     private readonly IAuthApi _authApi;
     private readonly HttpClient _googleMapsCliente;
     public EnderecoService(
         IMapper mapper,
-        IBaseRepository<Aluno> alunoRepository,
         IAuthApi authApi,
         IBaseRepository<Endereco> enderecoRepository,
         SecretManager secretManager,
@@ -37,7 +35,6 @@ public class EnderecoService : IEnderecoService
     {
         _secretManager = secretManager;
         _googleMapsCliente = httpClientFactory.CreateClient("api-googlemaps"); ;
-        _alunoRepository = alunoRepository;
         _mapper = mapper;
         _userContext = userContext;
         _authApi = authApi;
@@ -89,21 +86,7 @@ public class EnderecoService : IEnderecoService
 
     public async Task DeletarAsync(int id)
     {
-        // var usuariosComEnderecoVinculado = await _usuarioRepository
-        //     .BuscarAsync(x => x.EnderecoPrincipalId == id && x.Status != Domain.Enums.StatusEntityEnum.Deletado);
-
-        // if (usuariosComEnderecoVinculado is not null && usuariosComEnderecoVinculado.Any())
-        //     throw new Exception("Troque seu endereço principal antes de deletar!");
-
-        // var AlunosComEnderecoVinculado = await _alunoRepository
-        //     .BuscarAsync(x => (x.EnderecoPartidaId == id || x.EnderecoRetornoId == id) && x.Status != Domain.Enums.StatusEntityEnum.Deletado);
-
-        // if (AlunosComEnderecoVinculado is not null && AlunosComEnderecoVinculado.Any())
-        //     throw new Exception("Existe algum aluno com esse endereço!");
-
-        var model = await _enderecoRepository.ObterPorIdAsync(id);
-        model.Status = Domain.Enums.StatusEntityEnum.Deletado;
-        await _enderecoRepository.AtualizarAsync(model);
+        await _enderecoRepository.DeletarAsync(id);
     }
 
     public async Task<EnderecoViewModel> Obter(int id)
@@ -116,20 +99,14 @@ public class EnderecoService : IEnderecoService
             throw new BusinessRuleException(obterUsuarioResponse.Mensagem);
 
         var usuario = obterUsuarioResponse.Data;
-        var enderecos = usuario.Enderecos.Where(x => x.Status == Domain.Enums.StatusEntityEnum.Ativo).ToList();
+        var enderecos = usuario.Enderecos.Where(x => x.Status == Domain.Enums.StatusEntityEnum.Ativo);
         return _mapper.Map<List<EnderecoViewModel>>(enderecos);
     }
 
-    public async Task<Marcador> ObterMarcadorAsync(string endereco)
+    private async Task<Marcador> ObterMarcadorAsync(string endereco)
     {
         var requestUri = $"{_secretManager.Google.BaseUrl}/geocode/json?address={Uri.EscapeDataString(endereco)}&key={_secretManager.Google.Key}";
         var geocodeResponse = await _googleMapsCliente.GetFromJsonAsync<GoogleGeocodeResponse>(requestUri);
-
-        // Exibe o conteúdo da resposta para depuração
-        // Console.WriteLine("Resposta da API:");
-        // Console.WriteLine(response);
-
-        // var geocodeResponse = JsonSerializer.Deserialize<GoogleGeocodeResponse>(response);
 
         // Verifica se a resposta tem sucesso (status OK)
         if (geocodeResponse?.Status != "OK")
