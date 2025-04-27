@@ -1,0 +1,95 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AutoMapper;
+using Routes.Domain.Enums;
+using Routes.Domain.Interfaces.APIs;
+using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Services;
+using Routes.Domain.Models;
+using Routes.Domain.ViewModels;
+using Routes.Service.Exceptions;
+
+namespace Routes.Service.Implementations;
+
+public class AlunoRotaService : IAlunoRotaService
+{
+    private readonly IMapper _mapper;
+    private readonly IBaseRepository<AlunoRota> _alunoRotaRepository;
+    private readonly IBaseRepository<Rota> _rotaRepository;
+    private readonly IPessoasAPI _pessoasAPI;
+    public AlunoRotaService(
+        IPessoasAPI pessoasAPI,
+        IBaseRepository<AlunoRota> AlunoRotaRepository,
+        IBaseRepository<Rota> rotaRepository,
+        IMapper map)
+    {
+        _pessoasAPI = pessoasAPI;
+        _mapper = map;
+        _rotaRepository = rotaRepository;
+        _alunoRotaRepository = AlunoRotaRepository;
+    }
+
+    public async Task VincularRotaAsync(int rotaId, int alunoId)
+    {
+        if (rotaId < 1 || alunoId < 1)
+            return;
+
+        var alunoRota = await _alunoRotaRepository.BuscarUmAsync(x =>
+            x.AlunoId == alunoId &&
+            x.RotaId == rotaId &&
+            x.Status != StatusEntityEnum.Ativo);
+
+        var rotaExistente = await _rotaRepository.ObterPorIdAsync(rotaId);
+        var alunoExistente = await _pessoasAPI.ObterAlunoPorIdAsync(alunoId);
+
+        if (rotaExistente is null)
+        {
+            throw new BusinessRuleException("A rota especificado não existe.");
+        }
+
+        if (alunoExistente == null)
+        {
+            throw new BusinessRuleException("O aluno especificado não existe.");
+        }
+
+        if (alunoRota is null)
+        {
+            var AlunoRota = new AlunoRota
+            {
+                AlunoId = alunoId,
+                RotaId = rotaId
+            };
+
+            await _alunoRotaRepository.AdicionarAsync(AlunoRota);
+        }
+        else
+        {
+            alunoRota.Status = StatusEntityEnum.Ativo;
+            await _alunoRotaRepository.AtualizarAsync(alunoRota);
+        }
+    }
+
+    public async Task DesvincularRotaAsync(int rotaId, int alunoId)
+    {
+        if (rotaId < 1 || alunoId < 1)
+            return;
+
+        var alunoRota = await _alunoRotaRepository.BuscarUmAsync(x =>
+            x.AlunoId == alunoId &&
+            x.RotaId == rotaId);
+
+        if (alunoRota is null)
+        {
+            throw new BusinessRuleException("Nenhuma rota encontrada!");
+        }
+
+        alunoRota.Status = StatusEntityEnum.Deletado;
+        await _alunoRotaRepository.AtualizarAsync(alunoRota);
+    }
+
+    public async Task<List<AlunoRotaViewModel>> ObterRotasPorAlunoAsync(int alunoId, int rotaId)
+    {
+        var alunosRotas = await _alunoRotaRepository.BuscarAsync(x => x.AlunoId == alunoId && x.RotaId == rotaId);
+        return _mapper.Map<List<AlunoRotaViewModel>>(alunosRotas);
+    }
+}
