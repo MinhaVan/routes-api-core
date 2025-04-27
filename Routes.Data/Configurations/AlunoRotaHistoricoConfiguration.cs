@@ -9,7 +9,7 @@ public class AlunoRotaHistoricoConfiguration : IEntityTypeConfiguration<AlunoRot
     public void Configure(EntityTypeBuilder<AlunoRotaHistorico> modelBuilder)
     {
         modelBuilder.ConfigureBaseEntity();
-        modelBuilder.ToTable("aluno_rota_historico");
+        modelBuilder.ToTable("alunoRotaHistorico");
         modelBuilder.HasOne(x => x.RotaHistorico)
             .WithMany(y => y.AlunoRotaHistorico)
             .HasForeignKey(x => x.RotaHistoricoId);

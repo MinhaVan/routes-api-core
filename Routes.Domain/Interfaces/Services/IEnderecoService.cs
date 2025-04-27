@@ -11,5 +11,6 @@ public interface IEnderecoService
     Task AtualizarAsync(EnderecoAtualizarViewModel enderecoAdicionarViewModel);
     Task DeletarAsync(int id);
     Task<EnderecoViewModel> Obter(int id);
+    Task<List<EnderecoViewModel>> Obter(List<int> ids);
     Task<List<EnderecoViewModel>> Obter();
 }

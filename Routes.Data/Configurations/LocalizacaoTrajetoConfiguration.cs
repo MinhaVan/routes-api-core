@@ -11,7 +11,7 @@ public class LocalizacaoTrajetoConfiguration : IEntityTypeConfiguration<Localiza
     {
         modelBuilder.ConfigureBaseEntity();
 
-        modelBuilder.ToTable("localizacao_trajeto");
+        modelBuilder.ToTable("localizacaoTrajeto");
         modelBuilder.HasOne(x => x.RotaHistorico)
             .WithMany(y => y.LocalizacaoTrajeto)
             .HasForeignKey(x => x.RotaHistoricoId);

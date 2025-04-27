@@ -3,6 +3,7 @@ using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace Routes.API.Controllers.v1;
 
@@ -48,6 +49,13 @@ public class EnderecoController : BaseController
     {
         var endereco = await _enderecoService.Obter(id);
         return Success(endereco);
+    }
+
+    [HttpGet("{ids}")]
+    public async Task<IActionResult> ObterAsync(List<int> ids)
+    {
+        var enderecos = await _enderecoService.Obter(ids);
+        return Success(enderecos);
     }
 
     [HttpGet]

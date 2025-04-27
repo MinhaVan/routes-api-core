@@ -9,7 +9,7 @@ public class OrdemTrajetoConfiguration : IEntityTypeConfiguration<OrdemTrajeto>
     public void Configure(EntityTypeBuilder<OrdemTrajeto> modelBuilder)
     {
         modelBuilder.ConfigureBaseEntity();
-        modelBuilder.ToTable("ordem_trajeto");
+        modelBuilder.ToTable("ordemTrajeto");
 
         modelBuilder.HasOne(x => x.Rota)
             .WithMany(y => y.OrdemTrajetos)

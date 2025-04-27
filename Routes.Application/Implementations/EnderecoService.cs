@@ -92,6 +92,9 @@ public class EnderecoService : IEnderecoService
     public async Task<EnderecoViewModel> Obter(int id)
         => _mapper.Map<EnderecoViewModel>(await _enderecoRepository.ObterPorIdAsync(id));
 
+    public async Task<List<EnderecoViewModel>> Obter(List<int> ids)
+        => _mapper.Map<List<EnderecoViewModel>>(await _enderecoRepository.BuscarAsync(x => ids.Contains(x.Id)));
+
     public async Task<List<EnderecoViewModel>> Obter()
     {
         var obterUsuarioResponse = await _authApi.ObterUsuarioAsync(_userContext.UserId);
