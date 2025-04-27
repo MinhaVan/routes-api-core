@@ -12,7 +12,7 @@ using Routes.Data.Context;
 namespace Routes.API.Migrations
 {
     [DbContext(typeof(APIContext))]
-    [Migration("20250427001958_init")]
+    [Migration("20250427223900_init")]
     partial class init
     {
         /// <inheritdoc />

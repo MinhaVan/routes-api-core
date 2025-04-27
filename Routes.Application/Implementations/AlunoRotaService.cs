@@ -29,6 +29,23 @@ public class AlunoRotaService : IAlunoRotaService
         _alunoRotaRepository = AlunoRotaRepository;
     }
 
+    public async Task AdicionarAsync(AlunoRotaViewModel alunoRota)
+    {
+        await _alunoRotaRepository.AdicionarAsync(_mapper.Map<AlunoRota>(alunoRota));
+    }
+
+    public async Task AtualizarAsync(AlunoRotaViewModel alunoRota)
+    {
+        var alunoRotaExistente = await _alunoRotaRepository.BuscarUmAsync(x => x.AlunoId == alunoRota.AlunoId && x.RotaId == alunoRota.RotaId);
+        if (alunoRotaExistente == null)
+        {
+            throw new BusinessRuleException("Aluno Rota não encontrado.");
+        }
+
+        alunoRotaExistente.Status = alunoRota.Status;
+        await _alunoRotaRepository.AtualizarAsync(alunoRotaExistente);
+    }
+
     public async Task VincularRotaAsync(int rotaId, int alunoId)
     {
         if (rotaId < 1 || alunoId < 1)
@@ -87,9 +104,17 @@ public class AlunoRotaService : IAlunoRotaService
         await _alunoRotaRepository.AtualizarAsync(alunoRota);
     }
 
-    public async Task<List<AlunoRotaViewModel>> ObterRotasPorAlunoAsync(int alunoId, int rotaId)
+    public async Task<List<AlunoRotaViewModel>> ObterRotasPorAlunoAsync(int rotaId, int? alunoId = null)
     {
-        var alunosRotas = await _alunoRotaRepository.BuscarAsync(x => x.AlunoId == alunoId && x.RotaId == rotaId);
+        var alunosRotas = await (
+            alunoId.HasValue ?
+            _alunoRotaRepository.BuscarAsync(x =>
+                x.RotaId == rotaId &&
+                x.AlunoId == alunoId.Value) :
+            _alunoRotaRepository.BuscarAsync(x =>
+                x.RotaId == rotaId)
+        );
+
         return _mapper.Map<List<AlunoRotaViewModel>>(alunosRotas);
     }
 }

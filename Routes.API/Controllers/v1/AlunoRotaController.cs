@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Routes.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Routes.Domain.ViewModels;
 
 namespace Routes.API.Controllers.v1;
 
@@ -16,11 +17,25 @@ public class AlunoRotaController : BaseController
         _alunoRotaService = alunoRotaService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> ObterRotasPorAlunoAsync(int rotaId, int alunoId)
+    [HttpPost]
+    public async Task<IActionResult> AdicionarAsync([FromBody] AlunoRotaViewModel alunoRota)
     {
-        await _alunoRotaService.ObterRotasPorAlunoAsync(rotaId, alunoId);
+        await _alunoRotaService.AdicionarAsync(alunoRota);
         return Success();
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> AtualizarAsync([FromBody] AlunoRotaViewModel alunoRota)
+    {
+        await _alunoRotaService.AtualizarAsync(alunoRota);
+        return Success();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ObterRotasPorAlunoAsync([FromQuery] int rotaId, [FromQuery] int? alunoId = null)
+    {
+        var response = await _alunoRotaService.ObterRotasPorAlunoAsync(rotaId, alunoId);
+        return Success(response);
     }
 
     [HttpPut("desvincular")]

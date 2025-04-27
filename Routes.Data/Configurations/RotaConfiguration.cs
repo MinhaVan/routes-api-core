@@ -10,8 +10,13 @@ public class RotaConfiguration : IEntityTypeConfiguration<Rota>
     {
         modelBuilder.ConfigureBaseEntity();
         modelBuilder.ToTable("rota");
+
         modelBuilder.HasOne(x => x.Veiculo)
             .WithMany(y => y.Rotas)
             .HasForeignKey(x => x.VeiculoId);
+
+        modelBuilder.HasMany(x => x.AlunoRotas)
+            .WithOne(y => y.Rota)
+            .HasForeignKey(x => x.RotaId);
     }
 }

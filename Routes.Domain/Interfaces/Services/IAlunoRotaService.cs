@@ -6,7 +6,10 @@ namespace Routes.Domain.Interfaces.Services;
 
 public interface IAlunoRotaService
 {
+    Task AdicionarAsync(AlunoRotaViewModel alunoRota);
+    Task AtualizarAsync(AlunoRotaViewModel alunoRota);
+    Task<List<AlunoRotaViewModel>> ObterRotasPorAlunoAsync(int rotaId, int? alunoId = null);
+
     Task VincularRotaAsync(int rotaId, int alunoId);
     Task DesvincularRotaAsync(int rotaId, int alunoId);
-    Task<List<AlunoRotaViewModel>> ObterRotasPorAlunoAsync(int alunoId, int rotaId);
 }

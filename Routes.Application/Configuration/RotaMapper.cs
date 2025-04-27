@@ -16,6 +16,7 @@ public class RotaMapper : Profile
         CreateMap<RotaViewModel, Rota>().ReverseMap();
         CreateMap<RotaAdicionarViewModel, Rota>().ReverseMap();
         CreateMap<RotaAtualizarViewModel, Rota>().ReverseMap();
+        CreateMap<AlunoRota, AlunoRotaViewModel>().ReverseMap();
         #endregion
     }
 }
