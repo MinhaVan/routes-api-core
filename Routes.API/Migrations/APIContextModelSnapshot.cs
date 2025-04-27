@@ -139,7 +139,7 @@ namespace Routes.API.Migrations
 
                     b.HasIndex("RotaHistoricoId");
 
-                    b.ToTable("alunoRota_historico", (string)null);
+                    b.ToTable("alunoRotaHistorico", (string)null);
                 });
 
             modelBuilder.Entity("Routes.Domain.Models.Endereco", b =>
@@ -332,7 +332,7 @@ namespace Routes.API.Migrations
 
                     b.HasIndex("OrdemTrajetoId");
 
-                    b.ToTable("ordemTrajeto_marcador", (string)null);
+                    b.ToTable("ordemTrajetoMarcador", (string)null);
                 });
 
             modelBuilder.Entity("Routes.Domain.Models.Rota", b =>

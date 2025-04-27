@@ -12,7 +12,7 @@ using Routes.Data.Context;
 namespace Routes.API.Migrations
 {
     [DbContext(typeof(APIContext))]
-    [Migration("20250427001802_init")]
+    [Migration("20250427001958_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -142,7 +142,7 @@ namespace Routes.API.Migrations
 
                     b.HasIndex("RotaHistoricoId");
 
-                    b.ToTable("alunoRota_historico", (string)null);
+                    b.ToTable("alunoRotaHistorico", (string)null);
                 });
 
             modelBuilder.Entity("Routes.Domain.Models.Endereco", b =>
@@ -335,7 +335,7 @@ namespace Routes.API.Migrations
 
                     b.HasIndex("OrdemTrajetoId");
 
-                    b.ToTable("ordemTrajeto_marcador", (string)null);
+                    b.ToTable("ordemTrajetoMarcador", (string)null);
                 });
 
             modelBuilder.Entity("Routes.Domain.Models.Rota", b =>

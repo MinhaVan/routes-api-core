@@ -232,7 +232,7 @@ namespace Routes.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ordemTrajeto_marcador",
+                name: "ordemTrajetoMarcador",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -248,9 +248,9 @@ namespace Routes.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ordemTrajeto_marcador", x => x.Id);
+                    table.PrimaryKey("PK_ordemTrajetoMarcador", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ordemTrajeto_marcador_ordemTrajeto_OrdemTrajetoId",
+                        name: "FK_ordemTrajetoMarcador_ordemTrajeto_OrdemTrajetoId",
                         column: x => x.OrdemTrajetoId,
                         principalTable: "ordemTrajeto",
                         principalColumn: "Id",
@@ -258,7 +258,7 @@ namespace Routes.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "alunoRota_historico",
+                name: "alunoRotaHistorico",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -274,9 +274,9 @@ namespace Routes.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_alunoRota_historico", x => x.Id);
+                    table.PrimaryKey("PK_alunoRotaHistorico", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_alunoRota_historico_rotaHistorico_RotaHistoricoId",
+                        name: "FK_alunoRotaHistorico_rotaHistorico_RotaHistoricoId",
                         column: x => x.RotaHistoricoId,
                         principalTable: "rotaHistorico",
                         principalColumn: "Id",
@@ -334,8 +334,8 @@ namespace Routes.API.Migrations
                 column: "RotaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_alunoRota_historico_RotaHistoricoId",
-                table: "alunoRota_historico",
+                name: "IX_alunoRotaHistorico_RotaHistoricoId",
+                table: "alunoRotaHistorico",
                 column: "RotaHistoricoId");
 
             migrationBuilder.CreateIndex(
@@ -354,8 +354,8 @@ namespace Routes.API.Migrations
                 column: "RotaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ordemTrajeto_marcador_OrdemTrajetoId",
-                table: "ordemTrajeto_marcador",
+                name: "IX_ordemTrajetoMarcador_OrdemTrajetoId",
+                table: "ordemTrajetoMarcador",
                 column: "OrdemTrajetoId");
 
             migrationBuilder.CreateIndex(
@@ -381,7 +381,7 @@ namespace Routes.API.Migrations
                 name: "ajusteAlunoRota");
 
             migrationBuilder.DropTable(
-                name: "alunoRota_historico");
+                name: "alunoRotaHistorico");
 
             migrationBuilder.DropTable(
                 name: "localizacaoTrajeto");
@@ -390,7 +390,7 @@ namespace Routes.API.Migrations
                 name: "motoristaRota");
 
             migrationBuilder.DropTable(
-                name: "ordemTrajeto_marcador");
+                name: "ordemTrajetoMarcador");
 
             migrationBuilder.DropTable(
                 name: "alunoRota");
