@@ -1,0 +1,114 @@
+name: Deploy Multi-Environment
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  deploy-dev:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Testes unitários
+        run: |
+          dotnet test --no-build --verbosity normal
+
+      - name: SSH Deploy DEV
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_DEV_HOST }}
+          username: ${{ secrets.VPS_DEV_USER }}
+          key: ${{ secrets.VPS_DEV_SSH_KEY }}
+          script: |
+            set -e
+            cd deploy/dev/
+
+            cd ./routes-api-core
+            git fetch origin && git checkout develop && git pull
+
+            cd ../infra
+            git fetch origin && git checkout develop && git pull
+
+            cd ./APIs
+            docker compose stop routes-api-dev || true
+            docker compose rm -f routes-api-dev || true
+            docker rmi apis-routes-api-dev:latest || true
+
+            docker compose build
+
+            if docker compose up -d; then
+              echo "Deploy DEV com sucesso! Salvando imagem de backup..."
+              docker tag apis-routes-api-dev:latest apis-routes-api-dev-backup:latest
+            else
+              echo "Erro no deploy DEV. Rollback iniciado..."
+              docker compose down || true
+              docker pull apis-routes-api-dev-backup:latest
+              docker run -d --name apis-routes-api-dev:latest apis-routes-api-dev-backup:latest
+              echo "Rollback DEV concluído."
+              exit 1
+            fi
+          debug: true
+
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://seu-site-prod.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Testes unitários
+        run: |
+          dotnet test --no-build --verbosity normal
+
+      - name: SSH Deploy PROD
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_PROD_HOST }}
+          username: ${{ secrets.VPS_PROD_USER }}
+          key: ${{ secrets.VPS_PROD_SSH_KEY }}
+          script: |
+            set -e
+            cd deploy/prod/
+
+            cd ./routes-api-core
+            git fetch origin && git checkout main && git pull
+
+            cd ../infra
+            git fetch origin && git checkout main && git pull
+
+            cd ./APIs
+            docker compose stop routes-api || true
+            docker compose rm -f routes-api || true
+            docker rmi apis-routes-api:latest || true
+
+            docker compose build
+
+            if docker compose up -d; then
+              echo "Deploy PROD com sucesso! Salvando imagem de backup..."
+              docker tag apis-routes-api:latest apis-routes-api-backup:latest
+            else
+              echo "Erro no deploy PROD. Rollback iniciado..."
+              docker compose down || true
+              docker pull apis-routes-api-backup:latest
+              docker run -d --name apis-routes-api:latest apis-routes-api-backup:latest
+              echo "Rollback PROD concluído."
+              exit 1
+            fi
