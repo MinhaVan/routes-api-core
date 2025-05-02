@@ -9,6 +9,9 @@ on:
 jobs:
   deploy-dev:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+    concurrency:
+      group: deploy-dev-vps-lock
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -61,6 +64,9 @@ jobs:
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
+    concurrency:
+      group: deploy-prod-vps-lock
+      cancel-in-progress: false
     needs: deploy-dev
     runs-on: ubuntu-latest
     environment:
