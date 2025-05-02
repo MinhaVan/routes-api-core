@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy-dev:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -42,18 +42,18 @@ jobs:
             cd ./APIs
             docker compose stop routes-api-dev || true
             docker compose rm -f routes-api-dev || true
-            docker rmi routes-api-dev:latest || true
+            docker rmi apis-routes-api-dev:latest || true
 
             docker compose build
 
             if docker compose up -d; then
               echo "Deploy DEV com sucesso! Salvando imagem de backup..."
-              docker tag routes-api-dev:latest routes-api-dev-backup:latest
+              docker tag apis-routes-api-dev:latest apis-routes-api-dev-backup:latest
             else
               echo "Erro no deploy DEV. Rollback iniciado..."
               docker compose down || true
-              docker pull routes-api-dev-backup:latest
-              docker run -d --name routes-api-dev:latest routes-api-dev-backup:latest
+              docker pull apis-routes-api-dev-backup:latest
+              docker run -d --name apis-routes-api-dev:latest apis-routes-api-dev-backup:latest
               echo "Rollback DEV concluído."
               exit 1
             fi
@@ -97,18 +97,18 @@ jobs:
             cd ./APIs
             docker compose stop routes-api || true
             docker compose rm -f routes-api || true
-            docker rmi routes-api:latest || true
+            docker rmi apis-routes-api:latest || true
 
             docker compose build
 
             if docker compose up -d; then
               echo "Deploy PROD com sucesso! Salvando imagem de backup..."
-              docker tag routes-api:latest routes-api-backup:latest
+              docker tag apis-routes-api:latest apis-routes-api-backup:latest
             else
               echo "Erro no deploy PROD. Rollback iniciado..."
               docker compose down || true
-              docker pull routes-api-backup:latest
-              docker run -d --name routes-api:latest routes-api-backup:latest
+              docker pull apis-routes-api-backup:latest
+              docker run -d --name apis-routes-api:latest apis-routes-api-backup:latest
               echo "Rollback PROD concluído."
               exit 1
             fi
