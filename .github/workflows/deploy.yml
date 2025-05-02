@@ -114,7 +114,7 @@ jobs:
             else
               echo "Erro no deploy PROD. Rollback iniciado..."
               docker compose down || true
-              docker pull apis-routes-api-backup:latest
+              docker tag apis-routes-api-backup:latest apis-routes-api:latest
               docker run -d --name apis-routes-api:latest apis-routes-api-backup:latest
               echo "Rollback PROD concluído."
               exit 1
