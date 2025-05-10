@@ -52,7 +52,7 @@ public class EnderecoController : BaseController
     }
 
     [HttpGet("Lista/{ids}")]
-    public async Task<IActionResult> ObterAsync(List<int> ids)
+    public async Task<IActionResult> ObterAsync([FromQuery] List<int> ids)
     {
         var enderecos = await _enderecoService.Obter(ids);
         return Success(enderecos);
