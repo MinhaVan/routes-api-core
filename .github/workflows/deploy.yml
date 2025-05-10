@@ -54,21 +54,21 @@ jobs:
             git fetch origin && git checkout develop && git pull
 
             cd ./APIs
-            docker compose stop routes-api-dev || true
-            docker compose rm -f routes-api-dev || true
-            docker rmi apis-routes-api-dev:latest || true
+            docker compose stop router-api-dev || true
+            docker compose rm -f router-api-dev || true
+            docker rmi apis-router-api-dev:latest || true
 
-            docker compose build routes-api-dev
+            docker compose build router-api-dev
 
-            if docker compose up -d routes-api-dev; then
+            if docker compose up -d router-api-dev; then
               echo "Deploy DEV com sucesso! Salvando imagem de backup..."
-              docker tag apis-routes-api-dev:latest apis-routes-api-dev-backup:latest
+              docker tag apis-router-api-dev:latest apis-router-api-dev-backup:latest
             else
               echo "Erro no deploy DEV. Rollback iniciado..."
-              docker compose stop routes-api-dev || true
-              docker compose rm -f routes-api-dev || true
-              docker tag apis-routes-api-dev-backup:latest apis-routes-api-dev:latest
-              docker run -d --name routes-api-dev apis-routes-api-dev:latest
+              docker compose stop router-api-dev || true
+              docker compose rm -f router-api-dev || true
+              docker tag apis-router-api-dev-backup:latest apis-router-api-dev:latest
+              docker run -d --name router-api-dev apis-router-api-dev:latest
               echo "Rollback DEV concluído."
               exit 1
             fi
