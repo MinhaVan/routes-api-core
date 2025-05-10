@@ -129,6 +129,8 @@ public class RotaService : IRotaService
     {
         var alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
         var alunosId = alunos.Data.Select(x => x.Id).ToList();
+        if (!alunosId.Any())
+            return default!;
 
         var response = await _rotaRepository.BuscarAsync(
             x => x.EmpresaId == _userContext.Empresa

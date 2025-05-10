@@ -27,8 +27,8 @@ public class PessoasAPI : IPessoasAPI
     public async Task<BaseResponse<IEnumerable<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId)
     {
         _logger.LogInformation($"Enviando requisição para obter dados do aluno - Dados: {alunosId.ToJson()}");
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_context.Token}");
-        var response = await _httpClient.GetAsync($"/api/v1/Aluno/{alunosId}");
+        _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
+        var response = await _httpClient.GetAsync($"v1/Aluno/{alunosId}");
 
         if (response.IsSuccessStatusCode)
         {
@@ -47,8 +47,8 @@ public class PessoasAPI : IPessoasAPI
     public async Task<BaseResponse<AlunoViewModel>> ObterAlunoPorIdAsync(int alunoId)
     {
         _logger.LogInformation($"Enviando requisição para obter dados do aluno - Dados: {alunoId}");
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_context.Token}");
-        var response = await _httpClient.GetAsync($"/api/v1/Aluno/{alunoId}");
+        _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
+        var response = await _httpClient.GetAsync($"v1/Aluno/{alunoId}");
 
         if (response.IsSuccessStatusCode)
         {
@@ -67,8 +67,8 @@ public class PessoasAPI : IPessoasAPI
     public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorResponsavelIdAsync()
     {
         _logger.LogInformation($"Enviando requisição para obter todos os alunos do responsavel");
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_context.Token}");
-        var response = await _httpClient.GetAsync($"/api/v1/Aluno/");
+        _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
+        var response = await _httpClient.GetAsync($"v1/Aluno/");
 
         if (response.IsSuccessStatusCode)
         {
@@ -87,8 +87,8 @@ public class PessoasAPI : IPessoasAPI
     public async Task<BaseResponse<MotoristaViewModel>> ObterMotoristaPorIdAsync(int motoristaId)
     {
         _logger.LogInformation($"Enviando requisição para obter dados do motorista - Dados: {motoristaId}");
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_context.Token}");
-        var response = await _httpClient.GetAsync($"/api/v1/Motorista/{motoristaId}");
+        _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
+        var response = await _httpClient.GetAsync($"v1/Motorista/{motoristaId}");
 
         if (response.IsSuccessStatusCode)
         {
@@ -107,8 +107,8 @@ public class PessoasAPI : IPessoasAPI
     public async Task<BaseResponse<MotoristaViewModel>> ObterMotoristaPorUsuarioIdAsync(int usuarioId)
     {
         _logger.LogInformation($"Enviando requisição para obter dados do motorista pelo usuarioId - Dados: {usuarioId}");
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_context.Token}");
-        var response = await _httpClient.GetAsync($"/api/v1/Motorista/Usuario/{usuarioId}");
+        _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
+        var response = await _httpClient.GetAsync($"v1/Motorista/Usuario/{usuarioId}");
 
         if (response.IsSuccessStatusCode)
         {
