@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Routes.Domain.Interfaces.Services;
-using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
