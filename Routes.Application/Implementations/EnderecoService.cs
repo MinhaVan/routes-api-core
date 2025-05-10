@@ -97,12 +97,7 @@ public class EnderecoService : IEnderecoService
 
     public async Task<List<EnderecoViewModel>> Obter()
     {
-        var obterUsuarioResponse = await _authApi.ObterUsuarioAsync(_userContext.UserId);
-        if (!obterUsuarioResponse.Sucesso || obterUsuarioResponse.Data == null)
-            throw new BusinessRuleException(obterUsuarioResponse.Mensagem);
-
-        var usuario = obterUsuarioResponse.Data;
-        var enderecos = usuario.Enderecos.Where(x => x.Status == Domain.Enums.StatusEntityEnum.Ativo);
+        var enderecos = await _enderecoRepository.BuscarAsync(x => x.Status == Domain.Enums.StatusEntityEnum.Ativo && x.UsuarioId == _userContext.UserId);
         return _mapper.Map<List<EnderecoViewModel>>(enderecos);
     }
 
