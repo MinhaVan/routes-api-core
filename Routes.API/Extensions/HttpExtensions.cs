@@ -2,7 +2,6 @@ using System;
 using Routes.Domain.Interfaces.APIs;
 using Routes.Service.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Refit;
 using Routes.Data.APIs;
 
 namespace Routes.API.Extensions;
@@ -37,10 +36,14 @@ public static class HttpExtensions
             client.DefaultRequestHeaders.Add("Accept", "application/json");
         });
 
-        services.AddRefitClient<IAuthApi>()
-            .ConfigureHttpClient(c => c.BaseAddress = new Uri(secretManager.URL.AuthAPI));
+        services.AddHttpClient("api-auth", client =>
+        {
+            client.BaseAddress = new Uri(secretManager.URL.AuthAPI);
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
 
         services.AddScoped<IPessoasAPI, PessoasAPI>();
+        services.AddScoped<IAuthApi, AuthAPI>();
 
         Console.WriteLine("Configuração das APIs consumidas realizada com sucesso!");
 

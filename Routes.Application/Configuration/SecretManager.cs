@@ -83,5 +83,4 @@ public class URL
 {
     public string AuthAPI { get; set; }
     public string PessoasAPI { get; set; }
-    public string PaymentAPI { get; set; }
 }
