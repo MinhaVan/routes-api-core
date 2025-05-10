@@ -4,6 +4,7 @@ namespace Routes.Domain.Models;
 
 public class EnderecoAdicionarViewModel
 {
+    public int? UsuarioId { get; set; }
     public string Complemento { get; set; }
     public string Numero { get; set; }
     public string CEP { get; set; }

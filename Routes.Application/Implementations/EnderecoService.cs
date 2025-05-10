@@ -44,7 +44,7 @@ public class EnderecoService : IEnderecoService
     public async Task AdicionarAsync(EnderecoAdicionarViewModel enderecoAdicionarViewModel)
     {
         var model = _mapper.Map<Endereco>(enderecoAdicionarViewModel);
-        model.UsuarioId = _userContext.UserId;
+        model.UsuarioId = enderecoAdicionarViewModel.UsuarioId.HasValue ? enderecoAdicionarViewModel.UsuarioId : _userContext.UserId;
         model.Status = Domain.Enums.StatusEntityEnum.Ativo;
 
         var marcador = await ObterMarcadorAsync(model.ObterEnderecoCompleto());
