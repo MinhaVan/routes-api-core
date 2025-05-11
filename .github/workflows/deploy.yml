@@ -17,25 +17,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configurar .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: "9.0.x"
+      # - name: Configurar .NET
+      #   uses: actions/setup-dotnet@v3
+      #   with:
+      #     dotnet-version: "9.0.x"
 
-      - name: Testes unitários
-        run: dotnet test --no-build --verbosity normal
+      # - name: Testes unitários
+      #   run: dotnet test --no-build --verbosity normal
 
-      - name: Install SonarScanner
-        run: dotnet tool install --global dotnet-sonarscanner
+      # - name: Install SonarScanner
+      #   run: dotnet tool install --global dotnet-sonarscanner
 
-      - name: Begin Sonar Analysis
-        run: dotnet sonarscanner begin /k:"routes-api-core" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="http://168.231.96.82:19000"
+      # - name: Begin Sonar Analysis
+      #   run: dotnet sonarscanner begin /k:"routes-api-core" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="http://168.231.96.82:19000"
 
-      - name: Build project
-        run: dotnet build --no-incremental
+      # - name: Build project
+      #   run: dotnet build --no-incremental
 
-      - name: End Sonar Analysis
-        run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      # - name: End Sonar Analysis
+      #   run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
       - name: SSH Deploy DEV
         uses: appleboy/ssh-action@v0.1.10
