@@ -17,23 +17,17 @@ public class RotaHub : Hub
     private readonly ILogger<RotaHub> _logger;
     private readonly IBaseRepository<Rota> _rotaRepository;
     private readonly IAuthApi _authApi;
-    private readonly IRabbitMqRepository _rabbitMqRepository;
-    private readonly IRedisRepository _redisRepository;
 
     private const string RedisKeyPrefix = "rota:localizacao:";
 
     public RotaHub(
         ILogger<RotaHub> logger,
         IAuthApi authApi,
-        IBaseRepository<Rota> rotaRepository,
-        IRabbitMqRepository rabbitMqRepository,
-        IRedisRepository redisRepository)
+        IBaseRepository<Rota> rotaRepository)
     {
         _logger = logger;
         _authApi = authApi;
         _rotaRepository = rotaRepository;
-        _rabbitMqRepository = rabbitMqRepository;
-        _redisRepository = redisRepository;
     }
 
     #region Public Methods
@@ -95,14 +89,20 @@ public class RotaHub : Hub
             await Groups.AddToGroupAsync(Context.ConnectionId, rotaId.ToString());
 
             var redisKey = RedisKeyPrefix + rotaId;
-            var ultimaLocalizacao = await _redisRepository.GetAsync<BaseResponse<EnviarLocalizacaoWebSocketResponse>>(redisKey)
-                                        ?? new BaseResponse<EnviarLocalizacaoWebSocketResponse>
-                                        {
-                                            Data = null,
-                                            Mensagem = "Nenhuma localização disponível no momento.",
-                                            Sucesso = true
-                                        };
+            // var ultimaLocalizacao = await _redisRepository.GetAsync<BaseResponse<EnviarLocalizacaoWebSocketResponse>>(redisKey)
+            //                             ?? new BaseResponse<EnviarLocalizacaoWebSocketResponse>
+            //                             {
+            //                                 Data = null,
+            //                                 Mensagem = "Nenhuma localização disponível no momento.",
+            //                                 Sucesso = true
+            //                             };
 
+            var ultimaLocalizacao = new BaseResponse<EnviarLocalizacaoWebSocketResponse>
+            {
+                Data = null,
+                Mensagem = "Nenhuma localização disponível no momento.",
+                Sucesso = true
+            };
             await Clients.Caller.SendAsync("ReceberLocalizacao", ultimaLocalizacao);
         }
         catch (Exception ex)
@@ -120,17 +120,6 @@ public class RotaHub : Hub
     #endregion Public Methods
 
     #region Private Methods
-    private async Task TryEnviarParaRabbitMq(EnviarLocalizacaoWebSocketRequest data)
-    {
-        try
-        {
-            await _rabbitMqRepository.PublishAsync("localizacao.rota", data);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Falha ao publicar localização no RabbitMQ.");
-        }
-    }
 
     private async Task<bool> ValidarResponsavel(int responsavelId, int rotaId)
     {

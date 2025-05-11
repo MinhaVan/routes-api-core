@@ -27,7 +27,6 @@ public static class RepositoryExtensions
         services.AddScoped<IBaseRepository<RotaHistorico>, BaseRepository<RotaHistorico>>();
         services.AddScoped<IRotaHistoricoRepository, RotaHistoricoRepository>();
         services.AddScoped<IBaseRepository<Veiculo>, BaseRepository<Veiculo>>();
-        services.AddScoped<IRedisRepository, RedisRepository>();
 
         services.AddQueue(secretManager);
 
@@ -40,17 +39,6 @@ public static class RepositoryExtensions
     {
         var connection = secretManager.ConnectionStrings.RabbitConnection.Split(':');
 
-        services.AddSingleton(sp =>
-            new ConnectionFactory
-            {
-                HostName = connection.ElementAt(0), //"localhost",
-                Port = int.Parse(connection.ElementAt(1)), // 5672,
-                UserName = connection.ElementAt(2), // admin
-                Password = connection.ElementAt(3) // admin
-            }
-        );
-
-        services.AddScoped<IRabbitMqRepository, RabbitMqRepository>();
 
         return services;
     }
