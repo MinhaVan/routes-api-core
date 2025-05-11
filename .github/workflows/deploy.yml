@@ -17,25 +17,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # - name: Configurar .NET
-      #   uses: actions/setup-dotnet@v3
-      #   with:
-      #     dotnet-version: "9.0.x"
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ VPS_IP }}:5000/router-api-dev:latest .
 
-      # - name: Testes unitários
-      #   run: dotnet test --no-build --verbosity normal
-
-      # - name: Install SonarScanner
-      #   run: dotnet tool install --global dotnet-sonarscanner
-
-      # - name: Begin Sonar Analysis
-      #   run: dotnet sonarscanner begin /k:"routes-api-core" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="http://168.231.96.82:19000"
-
-      # - name: Build project
-      #   run: dotnet build --no-incremental
-
-      # - name: End Sonar Analysis
-      #   run: dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      - name: Push image to private registry
+        run: |
+          docker push ${{ VPS_IP }}:5000/router-api-dev:latest
 
       - name: SSH Deploy DEV
         uses: appleboy/ssh-action@v0.1.10
@@ -47,18 +35,11 @@ jobs:
             set -e
             cd deploy/dev/
 
-            cd ./routes-api-core
-            git fetch origin && git checkout develop && git pull
-
             cd ../infra
             git fetch origin && git checkout develop && git pull
 
             cd ./APIs
-            docker compose stop router-api-dev || true
-            docker compose rm -f router-api-dev || true
-            docker rmi apis-router-api-dev:latest || true
-
-            docker compose build router-api-dev
+            docker compose pull router-api-dev
             docker compose up -d router-api-dev
 
           debug: true
