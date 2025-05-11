@@ -19,11 +19,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ VPS_IP }}:5000/router-api-dev:latest .
+          docker build -t ${{ secrets.VPS_IP }}:5000/router-api-dev:latest .
 
       - name: Push image to private registry
         run: |
-          docker push ${{ VPS_IP }}:5000/router-api-dev:latest
+          docker push ${{ secrets.VPS_IP }}:5000/router-api-dev:latest
 
       - name: SSH Deploy DEV
         uses: appleboy/ssh-action@v0.1.10
