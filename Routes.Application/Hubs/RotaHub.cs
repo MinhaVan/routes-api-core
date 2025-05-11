@@ -58,12 +58,12 @@ public class RotaHub : Hub
             Sucesso = true
         };
 
-        var redisKey = RedisKeyPrefix + data.RotaId;
-        await _redisRepository.SetAsync(redisKey, response, 10);
+        // var redisKey = RedisKeyPrefix + data.RotaId;
+        // await _redisRepository.SetAsync(redisKey, response, 10);
 
         var tasks = new[]
         {
-            TryEnviarParaRabbitMq(data),
+            // TryEnviarParaRabbitMq(data),
             Clients.Group(data.RotaId.ToString()).SendAsync("ReceberLocalizacao", response)
         };
 

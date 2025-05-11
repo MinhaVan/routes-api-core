@@ -34,16 +34,13 @@ public static class ServiceExtensions
 
     public static IServiceCollection AddCache(this IServiceCollection services, SecretManager secretManager)
     {
-        services.AddSignalR().AddStackExchangeRedis(secretManager.ConnectionStrings.RedisConnection, options =>
-        {
-            options.Configuration.ChannelPrefix = "rotaHub"; // Nome opcional
-        });
+        services.AddSignalR();
 
-        services.AddSingleton<IConnectionMultiplexer>(sp =>
-        {
-            var configuration = secretManager.ConnectionStrings.RedisConnection;
-            return ConnectionMultiplexer.Connect(configuration);
-        });
+        // services.AddSingleton<IConnectionMultiplexer>(sp =>
+        // {
+        //     var configuration = secretManager.ConnectionStrings.RedisConnection;
+        //     return ConnectionMultiplexer.Connect(configuration);
+        // });
 
         Console.WriteLine("Configuração do Redis realizada com sucesso!");
 

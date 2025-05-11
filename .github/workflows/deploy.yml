@@ -59,17 +59,6 @@ jobs:
             docker rmi apis-router-api-dev:latest || true
 
             docker compose build router-api-dev
+            docker compose up -d router-api-dev
 
-            if docker compose up -d router-api-dev; then
-              echo "Deploy DEV com sucesso! Salvando imagem de backup..."
-              docker tag apis-router-api-dev:latest apis-router-api-dev-backup:latest
-            else
-              echo "Erro no deploy DEV. Rollback iniciado..."
-              docker compose stop router-api-dev || true
-              docker compose rm -f router-api-dev || true
-              docker tag apis-router-api-dev-backup:latest apis-router-api-dev:latest
-              docker run -d --name router-api-dev apis-router-api-dev:latest
-              echo "Rollback DEV concluído."
-              exit 1
-            fi
           debug: true
