@@ -25,6 +25,7 @@ public static class ServiceExtensions
         services.AddScoped<IAjusteEnderecoService, AjusteEnderecoService>();
         services.AddScoped<IVeiculoService, VeiculoService>();
         services.AddScoped<IAlunoRotaService, AlunoRotaService>();
+        services.AddScoped<IMotoristaRotaService, MotoristaRotaService>();
 
         Console.WriteLine("Configuração das services realizada com sucesso!");
 

@@ -17,17 +17,17 @@ public class MotoristaRotaController : BaseController
         _motoristaRotaService = motoristaRotaService;
     }
 
-    [HttpPut("desvincular")]
-    public async Task<IActionResult> DesvincularAsync([FromBody] MotoristaVincularViewModel request)
-    {
-        await _motoristaRotaService.DesvincularAsync(request);
-        return Success();
-    }
-
-    [HttpPut("vincular")]
+    [HttpPut("Vincular")]
     public async Task<IActionResult> VincularAsync([FromBody] MotoristaVincularViewModel request)
     {
         await _motoristaRotaService.VincularAsync(request);
+        return Success();
+    }
+
+    [HttpPut("Desvincular")]
+    public async Task<IActionResult> DesvincularAsync([FromBody] MotoristaVincularViewModel request)
+    {
+        await _motoristaRotaService.DesvincularAsync(request);
         return Success();
     }
 }
