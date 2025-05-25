@@ -446,14 +446,8 @@ public class TrajetoService : ITrajetoService
 
     public async Task<RotaViewModel> RotaOnlineParaMotoristaAsync()
     {
-        var obterUsuarioResponse = await _authApi.ObterUsuarioAsync(_userContext.UserId);
-        if (!obterUsuarioResponse.Sucesso || obterUsuarioResponse.Data == null)
-            throw new BusinessRuleException(obterUsuarioResponse.Mensagem);
-
-        var usuario = obterUsuarioResponse.Data;
-
-        var obterMotoristaPorIdResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(usuario.Id);
-        if (!obterMotoristaPorIdResponse.Sucesso || obterMotoristaPorIdResponse.Data == null)
+        var obterMotoristaPorIdResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(_userContext.UserId);
+        if (!obterMotoristaPorIdResponse.Sucesso)
             throw new BusinessRuleException(obterMotoristaPorIdResponse.Mensagem);
 
         var motorista = obterMotoristaPorIdResponse.Data;
