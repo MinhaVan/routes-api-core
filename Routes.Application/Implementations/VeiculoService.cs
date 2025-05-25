@@ -66,7 +66,6 @@ public class VeiculoService : IVeiculoService
         var configuracao = await _motoristaRotaRepository.BuscarUmAsync(x =>
             x.MotoristaId == motoristaId && x.RotaId == rotaId);
 
-        //x => x.Motorista, x => x.Motorista.Usuario
         var motoristaResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(configuracao.MotoristaId);
         if (motoristaResponse == null)
         {
