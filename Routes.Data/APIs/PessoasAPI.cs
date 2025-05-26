@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -26,11 +27,13 @@ public class PessoasAPI : IPessoasAPI
 
     public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId)
     {
+        Console.WriteLine($"Enviando requisição para obter dados do aluno - Dados: {string.Join(", ", alunosId)}");
+
         _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
-        var idsQuery = string.Join("&alunosId=", alunosId);
+        var query = string.Join("&", alunosId.Select(id => $"alunosIds={id}"));
 
-        var response = await _httpClient.GetAsync($"v1/Aluno?alunosId={idsQuery}");
+        var response = await _httpClient.GetAsync($"v1/Aluno/Lista?{query}");
         if (response.IsSuccessStatusCode)
         {
             var alunos = await response.Content.ReadFromJsonAsync<BaseResponse<List<AlunoViewModel>>>();
