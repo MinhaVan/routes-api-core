@@ -89,6 +89,7 @@ public class RotaService : IRotaService
 
     public async Task<RotaDetalheViewModel> ObterDetalheAsync(int id)
     {
+        Console.WriteLine($"Obtendo detalhes da rota com ID: {id}");
         var rota = await _rotaRepository.BuscarUmAsync(x =>
             x.Id == id && x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo,
             x => x.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo),
@@ -99,7 +100,10 @@ public class RotaService : IRotaService
             return default!;
 
         var alunosIds = alunosRotas.Select(x => x.AlunoId).ToList();
+        Console.WriteLine($"Obtendo alunos com IDs: {string.Join(", ", alunosIds)}");
         var alunos = await _pessoasAPI.ObterAlunoPorIdAsync(alunosIds);
+
+        Console.WriteLine($"Alunos obtidos: {alunos.Data.Count()} alunos encontrados.");
 
         var response = _mapper.Map<RotaDetalheViewModel>(rota);
         response.Alunos = _mapper.Map<List<AlunoDetalheViewModel>>(alunos.Data);

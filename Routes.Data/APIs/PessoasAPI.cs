@@ -30,6 +30,10 @@ public class PessoasAPI : IPessoasAPI
         _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
         var idsQuery = string.Join("&alunosId=", alunosId);
+
+
+        Console.WriteLine($"Envio de requisição para obter dados do aluno - URL: {_httpClient.BaseAddress}/v1/Aluno?alunosId={idsQuery} para o token: {_context.Token}");
+
         var response = await _httpClient.GetAsync($"v1/Aluno?alunosId={idsQuery}");
 
         if (response.IsSuccessStatusCode)
