@@ -6,7 +6,7 @@ namespace Routes.Domain.Interfaces.APIs;
 
 public interface IPessoasAPI
 {
-    Task<BaseResponse<IEnumerable<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId);
+    Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId);
     Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorResponsavelIdAsync();
     //
     Task<BaseResponse<MotoristaViewModel>> ObterMotoristaPorIdAsync(int motoristaId);

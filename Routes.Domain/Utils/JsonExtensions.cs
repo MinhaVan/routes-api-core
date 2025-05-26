@@ -4,9 +4,9 @@ namespace Routes.Data.Utils;
 
 public static class JsonExtensions
 {
-    public static string ToJson(this object obj)
+    public static string ToJson(this object obj, Formatting formatting = Formatting.None) // Formatting.Indented
     {
-        return JsonConvert.SerializeObject(obj, Formatting.Indented, new JsonSerializerSettings
+        return JsonConvert.SerializeObject(obj, formatting, new JsonSerializerSettings
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         });

@@ -24,23 +24,19 @@ public class PessoasAPI : IPessoasAPI
         _httpClient = httpClientFactory.CreateClient("api-pessoas");
     }
 
-    public async Task<BaseResponse<IEnumerable<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId)
+    public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId)
     {
-        _logger.LogInformation($"Enviando requisição para obter dados do aluno - Dados: {alunosId.ToJson()}");
         _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
         var idsQuery = string.Join("&alunosId=", alunosId);
 
-
-        Console.WriteLine($"Envio de requisição para obter dados do aluno - URL: {_httpClient.BaseAddress}/v1/Aluno?alunosId={idsQuery} para o token: {_context.Token}");
-
         var response = await _httpClient.GetAsync($"v1/Aluno?alunosId={idsQuery}");
-
         if (response.IsSuccessStatusCode)
         {
-            var aluno = await response.Content.ReadFromJsonAsync<BaseResponse<IEnumerable<AlunoViewModel>>>();
-            _logger.LogInformation($"Resposta da requisição para obter dados do aluno - Dados: {aluno.ToJson()}");
-            return aluno;
+            var alunos = await response.Content.ReadFromJsonAsync<BaseResponse<List<AlunoViewModel>>>();
+            Console.WriteLine($"Resposta da requisição para obter dados do aluno - Dados: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()}");
+            _logger.LogInformation($"Resposta da requisição para obter dados do aluno - Dados: {alunos.ToJson()}");
+            return alunos;
         }
         else
         {

@@ -11,6 +11,7 @@ using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Routes.Domain.Interfaces.APIs;
+using Routes.Data.Utils;
 
 namespace Routes.Service.Implementations;
 
@@ -89,24 +90,23 @@ public class RotaService : IRotaService
 
     public async Task<RotaDetalheViewModel> ObterDetalheAsync(int id)
     {
-        Console.WriteLine($"Obtendo detalhes da rota com ID: {id}");
         var rota = await _rotaRepository.BuscarUmAsync(x =>
             x.Id == id && x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo,
             x => x.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo),
             x => x.Historicos.OrderByDescending(x => x.DataCriacao));
 
-        var alunosRotas = await _alunoRotaRepository.BuscarAsync(x => x.RotaId == id);
+        var alunosRotas = await _alunoRotaRepository.BuscarAsync(x => x.RotaId == rota.Id);
         if (alunosRotas is null || !alunosRotas.Any())
             return default!;
 
         var alunosIds = alunosRotas.Select(x => x.AlunoId).ToList();
-        Console.WriteLine($"Obtendo alunos com IDs: {string.Join(", ", alunosIds)}");
         var alunos = await _pessoasAPI.ObterAlunoPorIdAsync(alunosIds);
-
-        Console.WriteLine($"Alunos obtidos: {alunos.Data.Count()} alunos encontrados.");
+        Console.WriteLine($"AlunosRotas encontrados: {alunosRotas.ToJson()}");
+        Console.WriteLine($"Obtendo alunos com IDs: {alunos.ToJson()}");
 
         var response = _mapper.Map<RotaDetalheViewModel>(rota);
         response.Alunos = _mapper.Map<List<AlunoDetalheViewModel>>(alunos.Data);
+        Console.WriteLine($"Quantidade de alunos mapeados: {response.Alunos.Count()}");
 
         var trajetoOnline = await _rotaHistoricoRepository.BuscarUmAsync(x => x.RotaId == id);
         response.EmAndamento = trajetoOnline is not null && trajetoOnline.Id > 0 && trajetoOnline.DataFim.HasValue == false;
