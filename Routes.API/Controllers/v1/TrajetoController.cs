@@ -19,14 +19,14 @@ public class TrajetoController : BaseController
         _trajetoService = trajetoService;
     }
 
-    [HttpGet("rota/{rotaId}/destino")]
+    [HttpGet("Rota/{rotaId}/Destino")]
     public async Task<IActionResult> ObterDestinoAsync([FromRoute] int rotaId, [FromQuery] bool validarRotaOnline)
     {
         var rota = await _trajetoService.ObterDestinoAsync(rotaId, validarRotaOnline);
         return Success(rota);
     }
 
-    [HttpPost("rota/{rotaId}")]
+    [HttpPost("Rota/{rotaId}")]
     // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> SalvarOrdemDoTrajetoAsync([FromRoute] int rotaId, [FromBody] List<Marcador> body)
     {

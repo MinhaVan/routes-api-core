@@ -74,6 +74,7 @@ else
 app.UseResponseCompression();
 app.UseRouting();
 app.MapHub<RotaHub>("websocket/rotas");
+app.MapHub<RotaHub>("v1/websocket/rotas");
 app.UseIpRateLimiting();
 app.UseAuthentication();
 app.UseAuthorization();
