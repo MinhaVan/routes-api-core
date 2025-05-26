@@ -27,8 +27,6 @@ public class PessoasAPI : IPessoasAPI
 
     public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId)
     {
-        Console.WriteLine($"Enviando requisição para obter dados do aluno - Dados: {string.Join(", ", alunosId)}");
-
         _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
         var query = string.Join("&", alunosId.Select(id => $"alunosIds={id}"));
@@ -37,7 +35,6 @@ public class PessoasAPI : IPessoasAPI
         if (response.IsSuccessStatusCode)
         {
             var alunos = await response.Content.ReadFromJsonAsync<BaseResponse<List<AlunoViewModel>>>();
-            Console.WriteLine($"Resposta da requisição para obter dados do aluno - Dados: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()}");
             _logger.LogInformation($"Resposta da requisição para obter dados do aluno - Dados: {alunos.ToJson()}");
             return alunos;
         }
@@ -52,6 +49,7 @@ public class PessoasAPI : IPessoasAPI
     public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorResponsavelIdAsync()
     {
         _logger.LogInformation($"Enviando requisição para obter todos os alunos do responsavel");
+        _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
         var response = await _httpClient.GetAsync($"v1/Aluno/");
 
@@ -73,6 +71,7 @@ public class PessoasAPI : IPessoasAPI
     public async Task<BaseResponse<MotoristaViewModel>> ObterMotoristaPorIdAsync(int motoristaId)
     {
         _logger.LogInformation($"Enviando requisição para obter dados do motorista - Dados: {motoristaId}");
+        _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
         var response = await _httpClient.GetAsync($"v1/Motorista/Usuario/{motoristaId}");
 
@@ -93,6 +92,7 @@ public class PessoasAPI : IPessoasAPI
     public async Task<BaseResponse<MotoristaViewModel>> ObterMotoristaPorUsuarioIdAsync(int usuarioId)
     {
         _logger.LogInformation($"Enviando requisição para obter dados do motorista pelo usuarioId - Dados: {usuarioId}");
+        _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
         var response = await _httpClient.GetAsync($"v1/Motorista/Usuario/{usuarioId}");
 

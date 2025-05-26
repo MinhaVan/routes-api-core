@@ -101,12 +101,9 @@ public class RotaService : IRotaService
 
         var alunosIds = alunosRotas.Select(x => x.AlunoId).ToList();
         var alunos = await _pessoasAPI.ObterAlunoPorIdAsync(alunosIds);
-        Console.WriteLine($"AlunosRotas encontrados: {alunosRotas.ToJson()}");
-        Console.WriteLine($"Obtendo alunos com IDs: {alunos.ToJson()}");
 
         var response = _mapper.Map<RotaDetalheViewModel>(rota);
         response.Alunos = _mapper.Map<List<AlunoDetalheViewModel>>(alunos.Data);
-        Console.WriteLine($"Quantidade de alunos mapeados: {response.Alunos.Count()}");
 
         var trajetoOnline = await _rotaHistoricoRepository.BuscarUmAsync(x => x.RotaId == id);
         response.EmAndamento = trajetoOnline is not null && trajetoOnline.Id > 0 && trajetoOnline.DataFim.HasValue == false;
