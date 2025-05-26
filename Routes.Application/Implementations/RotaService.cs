@@ -19,6 +19,7 @@ public class RotaService : IRotaService
     private readonly IMapper _mapper;
     private readonly IUserContext _userContext;
     private readonly IBaseRepository<Rota> _rotaRepository;
+    private readonly IBaseRepository<AlunoRota> _alunoRotaRepository;
     private readonly IPessoasAPI _pessoasAPI;
     private readonly IRotaHistoricoRepository _rotaHistoricoRepository;
     private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
@@ -28,12 +29,14 @@ public class RotaService : IRotaService
         IPessoasAPI pessoasAPI,
         IRotaHistoricoRepository rotaHistoricoRepository,
         IBaseRepository<MotoristaRota> motoristaRotaRepository,
+        IBaseRepository<AlunoRota> alunoRotaRepository,
         IBaseRepository<Rota> rotaRepository)
     {
         _userContext = userContext;
         _mapper = mapper;
         _pessoasAPI = pessoasAPI;
         _rotaRepository = rotaRepository;
+        _alunoRotaRepository = alunoRotaRepository;
         _motoristaRotaRepository = motoristaRotaRepository;
         _rotaHistoricoRepository = rotaHistoricoRepository;
     }
@@ -86,19 +89,20 @@ public class RotaService : IRotaService
 
     public async Task<RotaDetalheViewModel> ObterDetalheAsync(int id)
     {
-        var rotaResponse = _rotaRepository.BuscarUmAsync(x =>
+        var rota = await _rotaRepository.BuscarUmAsync(x =>
             x.Id == id && x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo,
             x => x.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo),
             x => x.Historicos.OrderByDescending(x => x.DataCriacao));
 
-        var alunosResponse = _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
-        await Task.WhenAll(rotaResponse, alunosResponse);
+        var alunosRotas = await _alunoRotaRepository.BuscarAsync(x => x.RotaId == id);
+        if (alunosRotas is null || !alunosRotas.Any())
+            return default!;
 
-        var alunos = alunosResponse.Result;
-        var rota = rotaResponse.Result;
+        var alunosIds = alunosRotas.Select(x => x.AlunoId).ToList();
+        var alunos = await _pessoasAPI.ObterAlunoPorIdAsync(alunosIds);
 
         var response = _mapper.Map<RotaDetalheViewModel>(rota);
-        response.Alunos = _mapper.Map<List<AlunoDetalheViewModel>>(alunos);
+        response.Alunos = _mapper.Map<List<AlunoDetalheViewModel>>(alunos.Data);
 
         var trajetoOnline = await _rotaHistoricoRepository.BuscarUmAsync(x => x.RotaId == id);
         response.EmAndamento = trajetoOnline is not null && trajetoOnline.Id > 0 && trajetoOnline.DataFim.HasValue == false;
