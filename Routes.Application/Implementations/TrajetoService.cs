@@ -69,7 +69,8 @@ public class TrajetoService : ITrajetoService
             if (alunoRotaHistorico is not null && alunoRotaHistorico.EntrouNaVan == alunoEntrouNaVan)
                 return;
 
-            var aluno = await _pessoasAPI.ObterAlunoPorIdAsync(alunoId);
+            var alunos = await _pessoasAPI.ObterAlunoPorIdAsync(new List<int> { alunoId });
+            var aluno = alunos.Data.FirstOrDefault();
             _ = aluno ?? throw new BusinessRuleException("Aluno não encontrado!");
 
             if (alunoRotaHistorico is not null)
@@ -83,7 +84,7 @@ public class TrajetoService : ITrajetoService
                 {
                     EntrouNaVan = alunoEntrouNaVan,
                     RotaHistoricoId = trajetoEmAndamento.Id,
-                    AlunoId = aluno.Data.Id
+                    AlunoId = aluno.Id
                 };
 
                 await _alunoRotaHistoricoRepository.AdicionarAsync(model);

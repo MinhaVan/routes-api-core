@@ -52,7 +52,7 @@ public class AjusteEnderecoService : IAjusteEnderecoService
     {
         try
         {
-            var aluno = await _pessoasAPI.ObterAlunoPorIdAsync(alterarEnderecoViewModel.AlunoId);
+            var aluno = await _pessoasAPI.ObterAlunoPorIdAsync(new List<int> { alterarEnderecoViewModel.AlunoId });
             if (aluno is null)
             {
                 _logger.LogInformation("[AdicionarAjusteEnderecoAsync] Aluno com identificador {0} não encontrado.", alterarEnderecoViewModel.AlunoId);

@@ -27,32 +27,14 @@ public class PessoasAPI : IPessoasAPI
     public async Task<BaseResponse<IEnumerable<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId)
     {
         _logger.LogInformation($"Enviando requisição para obter dados do aluno - Dados: {alunosId.ToJson()}");
+        _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
-        var response = await _httpClient.GetAsync($"v1/Aluno/{alunosId}");
+        var idsQuery = string.Join("&alunosId=", alunosId);
+        var response = await _httpClient.GetAsync($"v1/Aluno?alunosId={idsQuery}");
 
         if (response.IsSuccessStatusCode)
         {
             var aluno = await response.Content.ReadFromJsonAsync<BaseResponse<IEnumerable<AlunoViewModel>>>();
-            _logger.LogInformation($"Resposta da requisição para obter dados do aluno - Dados: {aluno.ToJson()}");
-            return aluno;
-        }
-        else
-        {
-            var mensagemErro = await response.Content.ReadAsStringAsync();
-            _logger.LogError($"Erro ao obter dados do aluno - Mensagem: {mensagemErro}");
-            throw new Exception("Ocorreu um erro ao tentar obter dados do aluno!");
-        }
-    }
-
-    public async Task<BaseResponse<AlunoViewModel>> ObterAlunoPorIdAsync(int alunoId)
-    {
-        _logger.LogInformation($"Enviando requisição para obter dados do aluno - Dados: {alunoId}");
-        _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
-        var response = await _httpClient.GetAsync($"v1/Aluno/{alunoId}");
-
-        if (response.IsSuccessStatusCode)
-        {
-            var aluno = await response.Content.ReadFromJsonAsync<BaseResponse<AlunoViewModel>>();
             _logger.LogInformation($"Resposta da requisição para obter dados do aluno - Dados: {aluno.ToJson()}");
             return aluno;
         }
@@ -72,6 +54,7 @@ public class PessoasAPI : IPessoasAPI
 
         if (response.IsSuccessStatusCode)
         {
+            var xxxx = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             var aluno = await response.Content.ReadFromJsonAsync<BaseResponse<List<AlunoViewModel>>>();
             _logger.LogInformation($"Resposta da requisição para obter todos os alunos do responsavel - Dados: {aluno.ToJson()}");
             return aluno;

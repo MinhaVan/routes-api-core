@@ -38,14 +38,14 @@ public class AlunoRotaController : BaseController
         return Success(response);
     }
 
-    [HttpPut("desvincular")]
+    [HttpPut("Desvincular")]
     public async Task<IActionResult> DesvincularAsync(int rotaId, int alunoId)
     {
         await _alunoRotaService.DesvincularRotaAsync(rotaId, alunoId);
         return Success();
     }
 
-    [HttpPut("vincular")]
+    [HttpPut("Vincular")]
     public async Task<IActionResult> VincularAsync(int rotaId, int alunoId)
     {
         await _alunoRotaService.VincularRotaAsync(rotaId, alunoId);

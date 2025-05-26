@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -51,23 +52,11 @@ public class AlunoRotaService : IAlunoRotaService
         if (rotaId < 1 || alunoId < 1)
             return;
 
+        await ValidarRotaAlunoAsync(rotaId, alunoId);
+
         var alunoRota = await _alunoRotaRepository.BuscarUmAsync(x =>
             x.AlunoId == alunoId &&
-            x.RotaId == rotaId &&
-            x.Status != StatusEntityEnum.Ativo);
-
-        var rotaExistente = await _rotaRepository.ObterPorIdAsync(rotaId);
-        var alunoExistente = await _pessoasAPI.ObterAlunoPorIdAsync(alunoId);
-
-        if (rotaExistente is null)
-        {
-            throw new BusinessRuleException("A rota especificado não existe.");
-        }
-
-        if (alunoExistente == null)
-        {
-            throw new BusinessRuleException("O aluno especificado não existe.");
-        }
+            x.RotaId == rotaId);
 
         if (alunoRota is null)
         {
@@ -91,14 +80,10 @@ public class AlunoRotaService : IAlunoRotaService
         if (rotaId < 1 || alunoId < 1)
             return;
 
-        var alunoRota = await _alunoRotaRepository.BuscarUmAsync(x =>
-            x.AlunoId == alunoId &&
-            x.RotaId == rotaId);
+        await ValidarRotaAlunoAsync(rotaId, alunoId);
 
-        if (alunoRota is null)
-        {
-            throw new BusinessRuleException("Nenhuma rota encontrada!");
-        }
+        var alunoRota = await _alunoRotaRepository.BuscarUmAsync(x => x.AlunoId == alunoId && x.RotaId == rotaId);
+        _ = alunoRota ?? throw new BusinessRuleException("Aluno não estava vinculado a essa rota!");
 
         alunoRota.Status = StatusEntityEnum.Deletado;
         await _alunoRotaRepository.AtualizarAsync(alunoRota);
@@ -116,5 +101,14 @@ public class AlunoRotaService : IAlunoRotaService
         );
 
         return _mapper.Map<List<AlunoRotaViewModel>>(alunosRotas);
+    }
+
+    private async Task ValidarRotaAlunoAsync(int rotaId, int alunoId)
+    {
+        var rotaExistente = await _rotaRepository.ObterPorIdAsync(rotaId);
+        _ = rotaExistente ?? throw new BusinessRuleException("A rota especificado não existe.");
+
+        var alunoExistente = await _pessoasAPI.ObterAlunoPorIdAsync(new List<int> { alunoId });
+        _ = alunoExistente ?? throw new BusinessRuleException("O aluno especificado não existe.");
     }
 }
