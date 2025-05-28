@@ -64,7 +64,7 @@ public class VeiculoService : IVeiculoService
     {
         var veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId && x.EmpresaId == _userContext.Empresa);
         var configuracao = await _motoristaRotaRepository.BuscarUmAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo);
-        var motoristaResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(configuracao.MotoristaId);
+        var motoristaResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(configuracao.MotoristaId, completarDadosDoUsuario);
         if (motoristaResponse == null || !motoristaResponse.Sucesso || motoristaResponse.Data == null)
         {
             throw new BusinessRuleException(motoristaResponse.Mensagem ?? "Motorista não encontrado ou não está ativo.");
