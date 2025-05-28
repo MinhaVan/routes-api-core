@@ -73,7 +73,7 @@ public class PessoasAPI : IPessoasAPI
         _logger.LogInformation($"Enviando requisição para obter dados do motorista - Dados: {motoristaId}");
         _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
-        var response = await _httpClient.GetAsync($"v1/Motorista/Usuario/{motoristaId}");
+        var response = await _httpClient.GetAsync($"v1/Motorista/{motoristaId}");
 
         if (response.IsSuccessStatusCode)
         {
