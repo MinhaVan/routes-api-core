@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.APIs;
 using Routes.Domain.Interfaces.Repository;
 using Routes.Domain.Interfaces.Services;
@@ -59,17 +60,14 @@ public class VeiculoService : IVeiculoService
         return _mapper.Map<List<VeiculoViewModel>>(veiculos);
     }
 
-    public async Task<VeiculoViewModel> ObterAsync(int motoristaId, int rotaId)
+    public async Task<VeiculoViewModel> ObterAsync(int veiculoId, int rotaId)
     {
-        var veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == motoristaId && x.EmpresaId == _userContext.Empresa);
-
-        var configuracao = await _motoristaRotaRepository.BuscarUmAsync(x =>
-            x.MotoristaId == motoristaId && x.RotaId == rotaId);
-
+        var veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId && x.EmpresaId == _userContext.Empresa);
+        var configuracao = await _motoristaRotaRepository.BuscarUmAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo);
         var motoristaResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(configuracao.MotoristaId);
-        if (motoristaResponse == null)
+        if (motoristaResponse == null || !motoristaResponse.Sucesso || motoristaResponse.Data == null)
         {
-            throw new BusinessRuleException(motoristaResponse.Mensagem);
+            throw new BusinessRuleException(motoristaResponse.Mensagem ?? "Motorista não encontrado ou não está ativo.");
         }
 
         var motorista = motoristaResponse.Data;

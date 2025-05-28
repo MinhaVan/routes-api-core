@@ -54,10 +54,10 @@ public class VeiculoController : BaseController
         return Success(veiculo);
     }
 
-    [HttpGet("motorista/{motoristaId}/rota/{rotaId}")]
-    public async Task<IActionResult> ObterAsync(int motoristaId, int rotaId)
+    [HttpGet("motorista/{veiculoId}/rota/{rotaId}")]
+    public async Task<IActionResult> ObterAsync(int veiculoId, int rotaId)
     {
-        var veiculo = await _veiculoService.ObterAsync(motoristaId, rotaId);
+        var veiculo = await _veiculoService.ObterAsync(veiculoId, rotaId);
         return Success(veiculo);
     }
 }
