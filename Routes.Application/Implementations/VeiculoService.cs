@@ -60,7 +60,7 @@ public class VeiculoService : IVeiculoService
         return _mapper.Map<List<VeiculoViewModel>>(veiculos);
     }
 
-    public async Task<VeiculoViewModel> ObterAsync(int veiculoId, int rotaId)
+    public async Task<VeiculoViewModel> ObterAsync(int veiculoId, int rotaId, bool completarDadosDoUsuario = false)
     {
         var veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId && x.EmpresaId == _userContext.Empresa);
         var configuracao = await _motoristaRotaRepository.BuscarUmAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo);

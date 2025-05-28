@@ -55,9 +55,9 @@ public class VeiculoController : BaseController
     }
 
     [HttpGet("{veiculoId}/Rota/{rotaId}/Motorista")]
-    public async Task<IActionResult> ObterAsync([FromRoute] int veiculoId, [FromRoute] int rotaId)
+    public async Task<IActionResult> ObterAsync([FromRoute] int veiculoId, [FromRoute] int rotaId, [FromQuery] bool completarDadosDoUsuario = false)
     {
-        var veiculo = await _veiculoService.ObterAsync(veiculoId, rotaId);
+        var veiculo = await _veiculoService.ObterAsync(veiculoId, rotaId, completarDadosDoUsuario);
         return Success(veiculo);
     }
 }
