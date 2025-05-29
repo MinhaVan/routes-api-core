@@ -172,7 +172,7 @@ public class RotaService : IRotaService
 
         var diaDaSemanaAtual = (DiaSemanaEnum)(hoje.DayOfWeek + 1); // Para alinhar com o enum
 
-        var motorista = await _pessoasAPI.ObterMotoristaPorIdAsync(usuarioId);
+        var motorista = await _pessoasAPI.ObterMotoristaPorUsuarioIdAsync(usuarioId);
         var motoristaRotas = await _motoristaRotaRepository.BuscarAsync(x => x.MotoristaId == motorista.Data.Id && x.Status == StatusEntityEnum.Ativo);
 
         if (motoristaRotas is null || !motoristaRotas.Any())
