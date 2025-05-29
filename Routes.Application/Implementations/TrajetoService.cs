@@ -447,7 +447,7 @@ public class TrajetoService : ITrajetoService
 
     public async Task<RotaViewModel> RotaOnlineParaMotoristaAsync()
     {
-        var obterMotoristaPorIdResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(_userContext.UserId);
+        var obterMotoristaPorIdResponse = await _pessoasAPI.ObterMotoristaPorUsuarioIdAsync(_userContext.UserId);
         if (!obterMotoristaPorIdResponse.Sucesso)
             throw new BusinessRuleException(obterMotoristaPorIdResponse.Mensagem);
 
