@@ -7,8 +7,8 @@ using Routes.API.Converters;
 using FluentValidation.AspNetCore;
 using FluentValidation;
 using System.Reflection;
-using StackExchange.Redis;
 using Routes.Service.Configuration;
+using Routes.Application.Implementations;
 
 namespace Routes.API.Extensions;
 
@@ -19,6 +19,7 @@ public static class ServiceExtensions
         services.AddHttpContextAccessor();
         services.AddCache(secretManager);
 
+        services.AddSingleton<ILocalizacaoCache, LocalizacaoCacheEmMemoria>();
         services.AddScoped<IEnderecoService, EnderecoService>();
         services.AddScoped<IRotaService, RotaService>();
         services.AddScoped<ITrajetoService, TrajetoService>();

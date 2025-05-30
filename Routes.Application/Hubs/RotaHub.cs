@@ -4,11 +4,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Routes.Domain.Interfaces.Repository;
-using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Routes.Domain.ViewModels.WebSocket;
 using Routes.Domain.Interfaces.APIs;
+using System.Collections.Concurrent;
+using Routes.Domain.Interfaces.Services;
 
 namespace Routes.Service.Hubs;
 
@@ -17,15 +18,17 @@ public class RotaHub : Hub
     private readonly ILogger<RotaHub> _logger;
     private readonly IBaseRepository<Rota> _rotaRepository;
     private readonly IAuthApi _authApi;
-
-    private const string RedisKeyPrefix = "rota:localizacao:";
+    private static readonly ConcurrentDictionary<int, BaseResponse<EnviarLocalizacaoWebSocketResponse>> _ultimaLocalizacaoPorRota = new();
+    private readonly ILocalizacaoCache _localizacaoCache;
 
     public RotaHub(
         ILogger<RotaHub> logger,
         IAuthApi authApi,
-        IBaseRepository<Rota> rotaRepository)
+        IBaseRepository<Rota> rotaRepository,
+        ILocalizacaoCache localizacaoCache)
     {
         _logger = logger;
+        _localizacaoCache = localizacaoCache;
         _authApi = authApi;
         _rotaRepository = rotaRepository;
     }
@@ -52,12 +55,10 @@ public class RotaHub : Hub
             Sucesso = true
         };
 
-        // var redisKey = RedisKeyPrefix + data.RotaId;
-        // await _redisRepository.SetAsync(redisKey, response, 10);
+        await _localizacaoCache.SalvarUltimaLocalizacaoAsync(data.RotaId, response);
 
         var tasks = new[]
         {
-            // TryEnviarParaRabbitMq(data),
             Clients.Group(data.RotaId.ToString()).SendAsync("ReceberLocalizacao", response)
         };
 
@@ -88,21 +89,14 @@ public class RotaHub : Hub
 
             await Groups.AddToGroupAsync(Context.ConnectionId, rotaId.ToString());
 
-            var redisKey = RedisKeyPrefix + rotaId;
-            // var ultimaLocalizacao = await _redisRepository.GetAsync<BaseResponse<EnviarLocalizacaoWebSocketResponse>>(redisKey)
-            //                             ?? new BaseResponse<EnviarLocalizacaoWebSocketResponse>
-            //                             {
-            //                                 Data = null,
-            //                                 Mensagem = "Nenhuma localização disponível no momento.",
-            //                                 Sucesso = true
-            //                             };
+            var ultimaLocalizacao = await _localizacaoCache.ObterUltimaLocalizacaoAsync(rotaId)
+                ?? new BaseResponse<EnviarLocalizacaoWebSocketResponse>
+                {
+                    Data = null,
+                    Mensagem = "Nenhuma localização disponível no momento.",
+                    Sucesso = true
+                };
 
-            var ultimaLocalizacao = new BaseResponse<EnviarLocalizacaoWebSocketResponse>
-            {
-                Data = null,
-                Mensagem = "Nenhuma localização disponível no momento.",
-                Sucesso = true
-            };
             await Clients.Caller.SendAsync("ReceberLocalizacao", ultimaLocalizacao);
         }
         catch (Exception ex)
@@ -111,6 +105,7 @@ public class RotaHub : Hub
             await EnviarRespostaErro("Ocorreu um erro ao tentar receber os dados da localização!");
         }
     }
+
 
     public async Task RemoverResponsavelDaRota(int rotaId)
     {
