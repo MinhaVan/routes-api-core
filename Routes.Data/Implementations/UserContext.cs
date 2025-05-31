@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Routes.Domain.Interfaces.Repository;
 using Microsoft.AspNetCore.Http;
+using Routes.Data.Utils;
 
 namespace Routes.Data.Implementations;
 
@@ -20,18 +21,25 @@ public class UserContext : IUserContext
         {
             try
             {
-                var httpContext = _httpContextAccessor.HttpContext;
-                var authorizationHeader = httpContext.Request.Headers["Authorization"].FirstOrDefault();
+                Console.WriteLine("Request: " + _httpContextAccessor.HttpContext.Request.ToJson());
 
-                if (!string.IsNullOrEmpty(authorizationHeader))
+                var httpContext = _httpContextAccessor.HttpContext;
+                if (httpContext?.Request?.Headers != null && httpContext.Request.Headers.TryGetValue("Authorization", out var authHeaderValues))
                 {
-                    return authorizationHeader;
+                    var authorizationHeader = authHeaderValues.FirstOrDefault();
+                    if (!string.IsNullOrEmpty(authorizationHeader))
+                    {
+                        return authorizationHeader;
+                    }
                 }
 
-                var queryToken = httpContext.Request.Query["access_token"].FirstOrDefault();
-                if (!string.IsNullOrEmpty(queryToken))
+                if (httpContext?.Request?.Query != null && httpContext.Request.Query.TryGetValue("access_token", out var queryTokenValues))
                 {
-                    return queryToken;
+                    var queryToken = queryTokenValues.FirstOrDefault();
+                    if (!string.IsNullOrEmpty(queryToken))
+                    {
+                        return queryToken;
+                    }
                 }
 
                 return null;
