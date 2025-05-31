@@ -12,12 +12,14 @@ using System.Collections.Concurrent;
 using Routes.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Routes.Data.Utils;
+using Microsoft.AspNetCore.Http;
 
 namespace Routes.Service.Hubs;
 
 [Authorize]
 public class RotaHub : Hub
 {
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<RotaHub> _logger;
     private readonly IBaseRepository<Rota> _rotaRepository;
     private readonly IPessoasAPI _pessoasAPI;
@@ -28,10 +30,12 @@ public class RotaHub : Hub
         ILogger<RotaHub> logger,
         IPessoasAPI pessoasAPI,
         IBaseRepository<Rota> rotaRepository,
+        IHttpContextAccessor httpContextAccessor,
         ILocalizacaoCache localizacaoCache)
     {
         _logger = logger;
         _localizacaoCache = localizacaoCache;
+        _httpContextAccessor = httpContextAccessor;
         _pessoasAPI = pessoasAPI;
         _rotaRepository = rotaRepository;
     }
@@ -129,7 +133,19 @@ public class RotaHub : Hub
 
     private async Task<bool> ValidarResponsavel(int rotaId)
     {
-        var alunosResponse = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync(completarDadosDoUsuario: true);
+        var token = "";
+
+        Console.WriteLine($"httpContext?.Request?.Query: {_httpContextAccessor.HttpContext?.Request?.Query?.ToJson()}");
+        if (_httpContextAccessor.HttpContext?.Request?.Query != null && _httpContextAccessor.HttpContext.Request.Query.TryGetValue("access_token", out var queryTokenValues))
+        {
+            var queryToken = queryTokenValues.FirstOrDefault();
+            if (!string.IsNullOrEmpty(queryToken))
+            {
+                token = queryToken;
+            }
+        }
+
+        var alunosResponse = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync(completarDadosDoUsuario: true, token: token);
         Console.WriteLine($"Alunos obtidos: {alunosResponse.ToJson()}");
 
         if (!alunosResponse.Sucesso || alunosResponse.Data == null)

@@ -15,42 +15,22 @@ public class UserContext : IUserContext
         _httpContextAccessor = httpContextAccessor;
     }
 
+
     public string Token
     {
         get
         {
             try
             {
-                Console.WriteLine("Request: " + _httpContextAccessor.HttpContext.Request.ToJson());
-
-                var httpContext = _httpContextAccessor.HttpContext;
-                if (httpContext?.Request?.Headers != null && httpContext.Request.Headers.TryGetValue("Authorization", out var authHeaderValues))
-                {
-                    var authorizationHeader = authHeaderValues.FirstOrDefault();
-                    if (!string.IsNullOrEmpty(authorizationHeader))
-                    {
-                        return authorizationHeader;
-                    }
-                }
-
-                if (httpContext?.Request?.Query != null && httpContext.Request.Query.TryGetValue("access_token", out var queryTokenValues))
-                {
-                    var queryToken = queryTokenValues.FirstOrDefault();
-                    if (!string.IsNullOrEmpty(queryToken))
-                    {
-                        return queryToken;
-                    }
-                }
-
-                return null;
+                var authorizationHeader = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+                return authorizationHeader;
             }
             catch (Exception)
             {
-                throw new UnauthorizedAccessException("Erro ao acessar o token.");
+                throw new UnauthorizedAccessException("Erro ao acessar o header Authorization.");
             }
         }
     }
-
 
     public int Empresa
     {

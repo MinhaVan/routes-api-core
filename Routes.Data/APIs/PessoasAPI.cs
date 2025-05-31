@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Routes.Data.Utils;
 using Routes.Domain.Interfaces.APIs;
@@ -46,11 +47,16 @@ public class PessoasAPI : IPessoasAPI
         }
     }
 
-    public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorResponsavelIdAsync(bool completarDadosDoUsuario = true)
+    public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorResponsavelIdAsync(bool completarDadosDoUsuario = true, string token = null)
     {
-        _logger.LogInformation($"Enviando requisição para obter todos os alunos do responsavel - _context.Token: {_context.Token}");
+        _logger.LogInformation($"Enviando requisição para obter todos os alunos do responsavel - _context.Token: {token}");
+        if (string.IsNullOrEmpty(token))
+        {
+            token = _context.Token;
+        }
+
         _httpClient.DefaultRequestHeaders.Remove("Authorization");
-        _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
+        _httpClient.DefaultRequestHeaders.Add("Authorization", token);
         var response = await _httpClient.GetAsync($"v1/Aluno?completarDadosDoUsuario={completarDadosDoUsuario}");
         _logger.LogInformation($"Retorno obter todos os alunos do responsavel");
 
