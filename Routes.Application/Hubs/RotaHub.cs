@@ -124,17 +124,9 @@ public class RotaHub : Hub
 
     private async Task<bool> ValidarResponsavel(int rotaId)
     {
-        var token = "";
-
-        Console.WriteLine($"httpContext?.Request?.Query: {_httpContextAccessor.HttpContext?.Request?.Query?.ToJson()}");
-        if (_httpContextAccessor.HttpContext?.Request?.Query != null && _httpContextAccessor.HttpContext.Request.Query.TryGetValue("access_token", out var queryTokenValues))
-        {
-            var queryToken = queryTokenValues.FirstOrDefault();
-            if (!string.IsNullOrEmpty(queryToken))
-            {
-                token = queryToken;
-            }
-        }
+        var token = _httpContextAccessor.HttpContext.Request.Query["access_token"].FirstOrDefault()?.ToString();
+        Console.WriteLine($"token: {token}");
+        Console.WriteLine($"_httpContextAccessor.HttpContext.Request.Query: {_httpContextAccessor.HttpContext.Request.Query.ToJson()}");
 
         var alunosResponse = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync(completarDadosDoUsuario: true, token: token);
         if (!alunosResponse.Sucesso || alunosResponse.Data == null)
