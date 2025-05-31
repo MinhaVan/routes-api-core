@@ -81,13 +81,13 @@ else
 
 app.UseResponseCompression();
 app.UseRouting();
-app.MapHub<RotaHub>("v1/Websocket/Rotas");
+app.UseCors("CorsPolicy");
 app.UseIpRateLimiting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapMetrics();
-app.UseCors("CorsPolicy");
 app.UseWebSockets();
+app.MapHub<RotaHub>("v1/Websocket/Rotas");
+app.MapMetrics();
 app.MapControllers();
 
 Console.WriteLine("Configuração de API finalizada com sucesso!");
