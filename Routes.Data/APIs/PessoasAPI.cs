@@ -46,12 +46,12 @@ public class PessoasAPI : IPessoasAPI
         }
     }
 
-    public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorResponsavelIdAsync()
+    public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorResponsavelIdAsync(bool completarDadosDoUsuario = true)
     {
         _logger.LogInformation($"Enviando requisição para obter todos os alunos do responsavel");
         _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
-        var response = await _httpClient.GetAsync($"v1/Aluno/");
+        var response = await _httpClient.GetAsync($"v1/Aluno?completarDadosDoUsuario={completarDadosDoUsuario}");
 
         if (response.IsSuccessStatusCode)
         {

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Routes.Service.Configuration;
+using System.Threading.Tasks;
 
 namespace Routes.API.Extensions;
 
@@ -30,6 +31,24 @@ public static class AuthenticationExtensions
                 ValidIssuer = tokenConfigurations.Issuer,
                 ValidAudience = tokenConfigurations.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfigurations.Secret))
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+
+                    var path = context.HttpContext.Request.Path.Value;
+
+                    if (!string.IsNullOrEmpty(accessToken) &&
+                        path.StartsWith("/v1/Websocket/Rotas", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Token = accessToken;
+                    }
+
+                    return Task.CompletedTask;
+                }
             };
         });
 

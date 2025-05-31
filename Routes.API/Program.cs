@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Routes.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 var environment = builder.Environment.EnvironmentName;
@@ -43,6 +44,13 @@ builder.Services.AddCustomAuthentication(secretManager)
 // Configura o logger
 builder.Logging.ClearProviders().AddConsole().AddDebug();
 
+#if DEBUG
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(12000); // aceita conexões externas na porta 12000
+});
+#endif
+
 var app = builder.Build();
 
 // Configurações específicas para desenvolvimento
@@ -73,7 +81,6 @@ else
 
 app.UseResponseCompression();
 app.UseRouting();
-app.MapHub<RotaHub>("Websocket/Rotas");
 app.MapHub<RotaHub>("v1/Websocket/Rotas");
 app.UseIpRateLimiting();
 app.UseAuthentication();

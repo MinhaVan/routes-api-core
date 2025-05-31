@@ -7,7 +7,7 @@ namespace Routes.Domain.Interfaces.APIs;
 public interface IPessoasAPI
 {
     Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId);
-    Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorResponsavelIdAsync();
+    Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorResponsavelIdAsync(bool completarDadosDoUsuario = true);
     Task<BaseResponse<MotoristaViewModel>> ObterMotoristaPorIdAsync(int motoristaId, bool completarDadosDoUsuario = false);
     Task<BaseResponse<MotoristaViewModel>> ObterMotoristaPorUsuarioIdAsync(int usuarioId, bool completarDadosDoUsuario = false);
 }

@@ -10,26 +10,28 @@ using Routes.Domain.ViewModels.WebSocket;
 using Routes.Domain.Interfaces.APIs;
 using System.Collections.Concurrent;
 using Routes.Domain.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Routes.Service.Hubs;
 
+[Authorize]
 public class RotaHub : Hub
 {
     private readonly ILogger<RotaHub> _logger;
     private readonly IBaseRepository<Rota> _rotaRepository;
-    private readonly IAuthApi _authApi;
+    private readonly IPessoasAPI _pessoasAPI;
     private static readonly ConcurrentDictionary<int, BaseResponse<EnviarLocalizacaoWebSocketResponse>> _ultimaLocalizacaoPorRota = new();
     private readonly ILocalizacaoCache _localizacaoCache;
 
     public RotaHub(
         ILogger<RotaHub> logger,
-        IAuthApi authApi,
+        IPessoasAPI pessoasAPI,
         IBaseRepository<Rota> rotaRepository,
         ILocalizacaoCache localizacaoCache)
     {
         _logger = logger;
         _localizacaoCache = localizacaoCache;
-        _authApi = authApi;
+        _pessoasAPI = pessoasAPI;
         _rotaRepository = rotaRepository;
     }
 
@@ -79,7 +81,7 @@ public class RotaHub : Hub
 
         try
         {
-            var autorizado = await ValidarResponsavel(responsavelId, rotaId);
+            var autorizado = await ValidarResponsavel(rotaId);
 
             if (!autorizado)
             {
@@ -116,16 +118,15 @@ public class RotaHub : Hub
 
     #region Private Methods
 
-    private async Task<bool> ValidarResponsavel(int responsavelId, int rotaId)
+    private async Task<bool> ValidarResponsavel(int rotaId)
     {
-        var obterUsuarioResponse = await _authApi.ObterUsuarioAsync(responsavelId);
-        var rota = await _rotaRepository.BuscarUmAsync(r => r.Id == rotaId, r => r.AlunoRotas);
-
-        if (!obterUsuarioResponse.Sucesso || obterUsuarioResponse.Data == null)
+        var alunosResponse = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync(completarDadosDoUsuario: true);
+        if (!alunosResponse.Sucesso || alunosResponse.Data == null)
             return false;
 
-        var usuario = obterUsuarioResponse.Data;
-        var idsAlunosResponsavel = usuario.Alunos.Select(a => a.Id).ToHashSet();
+        var rota = await _rotaRepository.BuscarUmAsync(r => r.Id == rotaId, r => r.AlunoRotas);
+        var alunos = alunosResponse.Data;
+        var idsAlunosResponsavel = alunos.Select(a => a.Id).ToHashSet();
 
         return rota.AlunoRotas.Any(ar => idsAlunosResponsavel.Contains(ar.AlunoId));
     }
