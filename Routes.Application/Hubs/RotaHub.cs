@@ -76,7 +76,7 @@ public class RotaHub : Hub
         });
     }
 
-    public async Task AdicionarResponsavelNaRota(int responsavelId, int rotaId)
+    public async Task AdicionarResponsavelNaRota(int responsavelId, int rotaId, string accessToken)
     {
         if (responsavelId <= 0 || rotaId <= 0)
         {
@@ -86,7 +86,7 @@ public class RotaHub : Hub
 
         try
         {
-            var autorizado = await ValidarResponsavel(rotaId);
+            var autorizado = await ValidarResponsavel(rotaId, accessToken);
 
             if (!autorizado)
             {
@@ -122,13 +122,13 @@ public class RotaHub : Hub
 
     #region Private Methods
 
-    private async Task<bool> ValidarResponsavel(int rotaId)
+    private async Task<bool> ValidarResponsavel(int rotaId, string accessToken)
     {
         var token = _httpContextAccessor.HttpContext.Request.Query["access_token"].FirstOrDefault()?.ToString();
         Console.WriteLine($"token: {token}");
         Console.WriteLine($"_httpContextAccessor.HttpContext.Request.Query: {_httpContextAccessor.HttpContext.Request.Query.ToJson()}");
 
-        var alunosResponse = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync(completarDadosDoUsuario: true, token: token);
+        var alunosResponse = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync(completarDadosDoUsuario: true, token: accessToken);
         if (!alunosResponse.Sucesso || alunosResponse.Data == null)
             return false;
 
