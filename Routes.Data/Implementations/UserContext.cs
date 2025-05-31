@@ -20,15 +20,31 @@ public class UserContext : IUserContext
         {
             try
             {
-                var authorizationHeader = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-                return authorizationHeader;
+                var httpContext = _httpContextAccessor.HttpContext;
+
+                // Tenta pegar do header Authorization (HTTP padrão)
+                var authorizationHeader = httpContext.Request.Headers["Authorization"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(authorizationHeader))
+                {
+                    return authorizationHeader.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
+                }
+
+                // Tenta pegar da query string (caso WebSocket ou fallback)
+                var queryToken = httpContext.Request.Query["access_token"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(queryToken))
+                {
+                    return queryToken;
+                }
+
+                return null;
             }
             catch (Exception)
             {
-                throw new UnauthorizedAccessException("Erro ao acessar o header Authorization.");
+                throw new UnauthorizedAccessException("Erro ao acessar o token.");
             }
         }
     }
+
 
     public int Empresa
     {
