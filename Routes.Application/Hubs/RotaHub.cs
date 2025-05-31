@@ -11,6 +11,7 @@ using Routes.Domain.Interfaces.APIs;
 using System.Collections.Concurrent;
 using Routes.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
+using Routes.Data.Utils;
 
 namespace Routes.Service.Hubs;
 
@@ -85,12 +86,16 @@ public class RotaHub : Hub
 
             if (!autorizado)
             {
+                Console.WriteLine($"Você ainda não pode receber os dados da localização");
                 await EnviarRespostaErro("Você ainda não pode receber os dados da localização!");
                 return;
             }
 
+            Console.WriteLine($"Adicionando ao grupo: {rotaId} para o responsável: {responsavelId}");
             await Groups.AddToGroupAsync(Context.ConnectionId, rotaId.ToString());
 
+
+            Console.WriteLine($"Obtendo a última localização para o responsável: {responsavelId} Data: {(await _localizacaoCache.ObterUltimaLocalizacaoAsync(rotaId)).ToJson()}");
             var ultimaLocalizacao = await _localizacaoCache.ObterUltimaLocalizacaoAsync(rotaId)
                 ?? new BaseResponse<EnviarLocalizacaoWebSocketResponse>
                 {
@@ -99,10 +104,14 @@ public class RotaHub : Hub
                     Sucesso = true
                 };
 
+
+            Console.WriteLine($"UltimaLocalizacao obtida: {ultimaLocalizacao.ToJson()}");
+
             await Clients.Caller.SendAsync("ReceberLocalizacao", ultimaLocalizacao);
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"Erro ao receber a localizacao: {responsavelId} {rotaId} {ex.ToJson()}");
             _logger.LogError(ex, "Erro ao adicionar o responsável {ResponsavelId} na rota {RotaId}", responsavelId, rotaId);
             await EnviarRespostaErro("Ocorreu um erro ao tentar receber os dados da localização!");
         }
@@ -121,12 +130,24 @@ public class RotaHub : Hub
     private async Task<bool> ValidarResponsavel(int rotaId)
     {
         var alunosResponse = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync(completarDadosDoUsuario: true);
+        Console.WriteLine($"Alunos obtidos: {alunosResponse.ToJson()}");
+
         if (!alunosResponse.Sucesso || alunosResponse.Data == null)
             return false;
 
+        Console.WriteLine($"1");
+
         var rota = await _rotaRepository.BuscarUmAsync(r => r.Id == rotaId, r => r.AlunoRotas);
+
+        Console.WriteLine($"2");
+
         var alunos = alunosResponse.Data;
+
+        Console.WriteLine($"3");
+
         var idsAlunosResponsavel = alunos.Select(a => a.Id).ToHashSet();
+
+        Console.WriteLine($"4");
 
         return rota.AlunoRotas.Any(ar => idsAlunosResponsavel.Contains(ar.AlunoId));
     }
