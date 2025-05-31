@@ -21,15 +21,13 @@ public class UserContext : IUserContext
             try
             {
                 var httpContext = _httpContextAccessor.HttpContext;
-
-                // Tenta pegar do header Authorization (HTTP padrão)
                 var authorizationHeader = httpContext.Request.Headers["Authorization"].FirstOrDefault();
+
                 if (!string.IsNullOrEmpty(authorizationHeader))
                 {
-                    return authorizationHeader.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
+                    return authorizationHeader;
                 }
 
-                // Tenta pegar da query string (caso WebSocket ou fallback)
                 var queryToken = httpContext.Request.Query["access_token"].FirstOrDefault();
                 if (!string.IsNullOrEmpty(queryToken))
                 {
