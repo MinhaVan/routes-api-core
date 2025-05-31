@@ -38,10 +38,7 @@ public static class AuthenticationExtensions
                 OnMessageReceived = context =>
                 {
                     var accessToken = context.Request.Query["access_token"];
-                    Console.WriteLine($"Query string: {context.Request.QueryString}");
-
                     var path = context.HttpContext.Request.Path.Value;
-                    Console.WriteLine($"Path: {path}");
 
                     if (!string.IsNullOrEmpty(accessToken) &&
                         path.StartsWith("/v1/Websocket/Rotas", StringComparison.OrdinalIgnoreCase))
