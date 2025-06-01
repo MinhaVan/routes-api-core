@@ -124,8 +124,6 @@ public class RotaHub : Hub
 
     private async Task<bool> ValidarResponsavel(int rotaId, string accessToken)
     {
-        Console.WriteLine($"Access Token: {accessToken}");
-
         var alunosResponse = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync(completarDadosDoUsuario: true, token: string.Format("Bearer {0}", accessToken));
         if (!alunosResponse.Sucesso || alunosResponse.Data == null)
             return false;
