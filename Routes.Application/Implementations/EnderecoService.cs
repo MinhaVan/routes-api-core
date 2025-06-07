@@ -24,17 +24,17 @@ public class EnderecoService : IEnderecoService
     private readonly IUserContext _userContext;
     private readonly IBaseRepository<Endereco> _enderecoRepository;
     private readonly IAuthApi _authApi;
-    private readonly HttpClient _googleMapsCliente;
+    private readonly IGoogleDirectionsService _googleDirectionsService;
     public EnderecoService(
         IMapper mapper,
         IAuthApi authApi,
         IBaseRepository<Endereco> enderecoRepository,
         SecretManager secretManager,
-        IHttpClientFactory httpClientFactory,
+        IGoogleDirectionsService googleDirectionsService,
         IUserContext userContext)
     {
         _secretManager = secretManager;
-        _googleMapsCliente = httpClientFactory.CreateClient("api-googlemaps"); ;
+        _googleDirectionsService = googleDirectionsService;
         _mapper = mapper;
         _userContext = userContext;
         _authApi = authApi;
@@ -47,7 +47,7 @@ public class EnderecoService : IEnderecoService
         model.UsuarioId = enderecoAdicionarViewModel.UsuarioId.HasValue ? enderecoAdicionarViewModel.UsuarioId : _userContext.UserId;
         model.Status = Domain.Enums.StatusEntityEnum.Ativo;
 
-        var marcador = await ObterMarcadorAsync(model.ObterEnderecoCompleto());
+        var marcador = await _googleDirectionsService.ObterMarcadorAsync(model.ObterEnderecoCompleto());
         model.Latitude = marcador.Latitude;
         model.Longitude = marcador.Longitude;
 
@@ -66,7 +66,7 @@ public class EnderecoService : IEnderecoService
             (model.CEP ?? string.Empty) != (enderecoAtualizarViewModel.CEP ?? string.Empty))
         {
             var enderecoRequest = $"{model.Rua ?? string.Empty} {model.Numero ?? string.Empty}, {model.Bairro ?? string.Empty}, {model.Cidade ?? string.Empty}, {model.Estado ?? string.Empty}, {model.CEP ?? string.Empty}, Brazil";
-            var marcador = await ObterMarcadorAsync(enderecoRequest);
+            var marcador = await _googleDirectionsService.ObterMarcadorAsync(enderecoRequest);
             model.Latitude = marcador.Latitude;
             model.Longitude = marcador.Longitude;
         }
@@ -99,30 +99,5 @@ public class EnderecoService : IEnderecoService
     {
         var enderecos = await _enderecoRepository.BuscarAsync(x => x.Status == Domain.Enums.StatusEntityEnum.Ativo && x.UsuarioId == _userContext.UserId);
         return _mapper.Map<List<EnderecoViewModel>>(enderecos);
-    }
-
-    private async Task<Marcador> ObterMarcadorAsync(string endereco)
-    {
-        var requestUri = $"{_secretManager.Google.BaseUrl}/geocode/json?address={Uri.EscapeDataString(endereco)}&key={_secretManager.Google.Key}";
-        var geocodeResponse = await _googleMapsCliente.GetFromJsonAsync<GoogleGeocodeResponse>(requestUri);
-
-        // Verifica se a resposta tem sucesso (status OK)
-        if (geocodeResponse?.Status != "OK")
-        {
-            Console.WriteLine($"Erro na resposta da API: {geocodeResponse?.Status}");
-            return null;
-        }
-
-        // Verifica se 'Results' contém itens
-        if (geocodeResponse?.Results == null || !geocodeResponse.Results.Any())
-        {
-            Console.WriteLine("Nenhum resultado encontrado.");
-            return null;
-        }
-
-        // Retorna o primeiro marcador encontrado
-        return geocodeResponse.Results
-            .Select(x => new Marcador { Latitude = x.Geometry.Location.Lat, Longitude = x.Geometry.Location.Lng })
-            .FirstOrDefault();
     }
 }

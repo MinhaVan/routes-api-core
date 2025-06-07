@@ -36,14 +36,22 @@ public class VeiculoService : IVeiculoService
     public async Task AdicionarAsync(List<VeiculoAdicionarViewModel> veiculosViewModels)
     {
         var veiculos = _mapper.Map<List<Veiculo>>(veiculosViewModels);
-        await Parallel.ForEachAsync(veiculos, async (item, token) => item.EmpresaId = _userContext.Empresa);
+        await Parallel.ForEachAsync(veiculos, async (item, token) =>
+        {
+            item.EmpresaId = _userContext.Empresa;
+            await Task.CompletedTask;
+        });
         await _veiculoRepository.AdicionarAsync(veiculos);
     }
 
     public async Task AtualizarAsync(List<VeiculoAtualizarViewModel> veiculosViewModels)
     {
         var veiculos = _mapper.Map<List<Veiculo>>(veiculosViewModels);
-        await Parallel.ForEachAsync(veiculos, async (item, token) => item.EmpresaId = _userContext.Empresa);
+        await Parallel.ForEachAsync(veiculos, async (item, token) =>
+        {
+            item.EmpresaId = _userContext.Empresa;
+            await Task.CompletedTask;
+        });
         await _veiculoRepository.AtualizarAsync(veiculos);
     }
 

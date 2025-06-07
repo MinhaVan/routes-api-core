@@ -16,47 +16,37 @@ using Routes.Domain.Interfaces.APIs;
 
 namespace Routes.Service.Implementations;
 
-public class TrajetoService : ITrajetoService
+public class TrajetoService(
+    ILogger<TrajetoService> logger,
+    IMapper mapper,
+    IUserContext userContext,
+    IAuthApi authApi,
+    IPessoasAPI pessoasAPI,
+    IBaseRepository<AjusteAlunoRota> ajusteAlunoRotaRepository,
+    IBaseRepository<Endereco> enderecoRepository,
+    IBaseRepository<OrdemTrajetoMarcador> ordemTrajetoMarcadorRepository,
+    IRotaHistoricoRepository rotaHistoricoRepository,
+    IBaseRepository<OrdemTrajeto> ordemTrajetoRepository,
+    IBaseRepository<MotoristaRota> motoristaRotaRepository,
+    IBaseRepository<AlunoRotaHistorico> alunoRotaHistoricoRepository,
+    IGoogleDirectionsService googleDirectionsService,
+    IBaseRepository<Rota> rotaRepository
+) : ITrajetoService
 {
-    private readonly IMapper _mapper;
-    private readonly ILogger<TrajetoService> _logger;
-    private readonly IUserContext _userContext;
-    private readonly IBaseRepository<Rota> _rotaRepository;
-    private readonly IAuthApi _authApi;
-    private readonly IPessoasAPI _pessoasAPI;
-    private readonly IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository;
-    private readonly IBaseRepository<Endereco> _enderecoRepository;
-    private readonly IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository;
-    private readonly IBaseRepository<AlunoRotaHistorico> _alunoRotaHistoricoRepository;
-    private readonly IRotaHistoricoRepository _rotaHistoricoRepository;
-    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
-    public TrajetoService(
-        ILogger<TrajetoService> logger,
-        IMapper mapper,
-        IUserContext userContext,
-        IAuthApi authApi,
-        IPessoasAPI pessoasAPI,
-        IBaseRepository<AjusteAlunoRota> ajusteAlunoRotaRepository,
-        IBaseRepository<Endereco> enderecoRepository,
-        IRotaHistoricoRepository rotaHistoricoRepository,
-        IBaseRepository<OrdemTrajeto> ordemTrajetoRepository,
-        IBaseRepository<MotoristaRota> motoristaRotaRepository,
-        IBaseRepository<AlunoRotaHistorico> alunoRotaHistoricoRepository,
-        IBaseRepository<Rota> rotaRepository)
-    {
-        _logger = logger;
-        _userContext = userContext;
-        _mapper = mapper;
-        _authApi = authApi;
-        _pessoasAPI = pessoasAPI;
-        _enderecoRepository = enderecoRepository;
-        _ordemTrajetoRepository = ordemTrajetoRepository;
-        _alunoRotaHistoricoRepository = alunoRotaHistoricoRepository;
-        _motoristaRotaRepository = motoristaRotaRepository;
-        _ajusteAlunoRotaRepository = ajusteAlunoRotaRepository;
-        _rotaRepository = rotaRepository;
-        _rotaHistoricoRepository = rotaHistoricoRepository;
-    }
+    private readonly ILogger<TrajetoService> _logger = logger;
+    private readonly IMapper _mapper = mapper;
+    private readonly IUserContext _userContext = userContext;
+    private readonly IAuthApi _authApi = authApi;
+    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
+    private readonly IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository = ajusteAlunoRotaRepository;
+    private readonly IBaseRepository<Endereco> _enderecoRepository = enderecoRepository;
+    private readonly IBaseRepository<OrdemTrajetoMarcador> _ordemTrajetoMarcadorRepository = ordemTrajetoMarcadorRepository;
+    private readonly IRotaHistoricoRepository _rotaHistoricoRepository = rotaHistoricoRepository;
+    private readonly IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository = ordemTrajetoRepository;
+    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository = motoristaRotaRepository;
+    private readonly IBaseRepository<AlunoRotaHistorico> _alunoRotaHistoricoRepository = alunoRotaHistoricoRepository;
+    private readonly IGoogleDirectionsService _googleDirectionsService = googleDirectionsService;
+    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
 
     public async Task AtualizarStatusAlunoTrajetoAsync(int alunoId, int rotaId, bool alunoEntrouNaVan)
     {
@@ -190,22 +180,28 @@ public class TrajetoService : ITrajetoService
     private List<Marcador> ObterMarcadorPorRotaDirecao(
         IEnumerable<AlunoViewModel> alunos,
         TipoRotaEnum tipoRota,
+        int rotaId,
         IEnumerable<AjusteAlunoRota> ajusteAlunoRota = null)
     {
-        var marcadores = new Dictionary<string, Marcador>();
+        ajusteAlunoRota = ajusteAlunoRota ?? new List<AjusteAlunoRota>();
+        var marcadoresPartidas = new Dictionary<string, Marcador>();
+        var marcadoresDestinos = new Dictionary<string, Marcador>();
+        var now = DateTime.Now;
 
         foreach (var aluno in alunos)
         {
+            Func<AjusteAlunoRota, bool> predicate = x => x.AlunoId == aluno.Id && x.Data.Date == now.Date && x.RotaId == rotaId;
+            var ajuste = ajusteAlunoRota.Any(predicate) ? ajusteAlunoRota.FirstOrDefault(predicate) : null;
             if (tipoRota == TipoRotaEnum.Ida)
             {
                 // Adiciona todas as partidas primeiro
-                var latPartida = aluno.EnderecoPartida.Latitude;
-                var lngPartida = aluno.EnderecoPartida.Longitude;
+                var latPartida = ajuste?.EnderecoPartida?.Latitude ?? aluno.EnderecoPartida.Latitude;
+                var lngPartida = ajuste?.EnderecoPartida?.Longitude ?? aluno.EnderecoPartida.Longitude;
                 var chavePartida = $"{latPartida},{lngPartida}";
 
-                if (!marcadores.ContainsKey(chavePartida))
+                if (!marcadoresPartidas.ContainsKey(chavePartida))
                 {
-                    marcadores[chavePartida] = new Marcador
+                    marcadoresPartidas[chavePartida] = new Marcador
                     {
                         EnderecoId = aluno.EnderecoPartidaId,
                         Titulo = aluno.EnderecoPartida.ObterEndereco(),
@@ -219,19 +215,19 @@ public class TrajetoService : ITrajetoService
                 else
                 {
                     // Adiciona o aluno à lista existente
-                    marcadores[chavePartida].Alunos.Add(_mapper.Map<AlunoViewModel>(aluno));
+                    marcadoresPartidas[chavePartida].Alunos.Add(_mapper.Map<AlunoViewModel>(aluno));
                 }
             }
             else
             {
                 // Adiciona todos os destinos primeiro
-                var latDestino = aluno.EnderecoDestino.Latitude;
-                var lngDestino = aluno.EnderecoDestino.Longitude;
+                var latDestino = ajuste?.EnderecoDestino?.Latitude ?? aluno.EnderecoDestino.Latitude;
+                var lngDestino = ajuste?.EnderecoDestino?.Longitude ?? aluno.EnderecoDestino.Longitude;
                 var chaveDestino = $"{latDestino},{lngDestino}";
 
-                if (!marcadores.ContainsKey(chaveDestino))
+                if (!marcadoresPartidas.ContainsKey(chaveDestino))
                 {
-                    marcadores[chaveDestino] = new Marcador
+                    marcadoresPartidas[chaveDestino] = new Marcador
                     {
                         EnderecoId = aluno.EnderecoDestinoId,
                         Titulo = aluno.EnderecoDestino.ObterEndereco(),
@@ -245,23 +241,20 @@ public class TrajetoService : ITrajetoService
                 else
                 {
                     // Adiciona o aluno à lista existente
-                    marcadores[chaveDestino].Alunos.Add(_mapper.Map<AlunoViewModel>(aluno));
+                    marcadoresPartidas[chaveDestino].Alunos.Add(_mapper.Map<AlunoViewModel>(aluno));
                 }
             }
-        }
 
-        // Adiciona os destinos ou retornos, dependendo do tipo de rota
-        foreach (var aluno in alunos)
-        {
+            // Adiciona os destinos ou retornos, dependendo do tipo de rota
             if (tipoRota == TipoRotaEnum.Ida)
             {
-                var latDestino = aluno.EnderecoDestino.Latitude;
-                var lngDestino = aluno.EnderecoDestino.Longitude;
+                var latDestino = ajuste?.EnderecoDestino?.Latitude ?? aluno.EnderecoDestino.Latitude;
+                var lngDestino = ajuste?.EnderecoDestino?.Longitude ?? aluno.EnderecoDestino.Longitude;
                 var chaveDestino = $"{latDestino},{lngDestino}";
 
-                if (!marcadores.ContainsKey(chaveDestino))
+                if (!marcadoresDestinos.ContainsKey(chaveDestino))
                 {
-                    marcadores[chaveDestino] = new Marcador
+                    marcadoresDestinos[chaveDestino] = new Marcador
                     {
                         EnderecoId = aluno.EnderecoDestinoId,
                         Titulo = aluno.EnderecoDestino.ObterEndereco(),
@@ -275,7 +268,7 @@ public class TrajetoService : ITrajetoService
                 else
                 {
                     // Adiciona o aluno à lista existente
-                    marcadores[chaveDestino].Alunos.Add(_mapper.Map<AlunoViewModel>(aluno));
+                    marcadoresDestinos[chaveDestino].Alunos.Add(_mapper.Map<AlunoViewModel>(aluno));
                 }
             }
             else
@@ -284,9 +277,9 @@ public class TrajetoService : ITrajetoService
                 var lngRetorno = aluno.EnderecoRetorno.Longitude;
                 var chaveRetorno = $"{latRetorno},{lngRetorno}";
 
-                if (!marcadores.ContainsKey(chaveRetorno))
+                if (!marcadoresDestinos.ContainsKey(chaveRetorno))
                 {
-                    marcadores[chaveRetorno] = new Marcador
+                    marcadoresDestinos[chaveRetorno] = new Marcador
                     {
                         EnderecoId = aluno.EnderecoRetornoId.Value,
                         Titulo = aluno.EnderecoRetorno.ObterEndereco(),
@@ -300,12 +293,28 @@ public class TrajetoService : ITrajetoService
                 else
                 {
                     // Adiciona o aluno à lista existente
-                    marcadores[chaveRetorno].Alunos.Add(_mapper.Map<AlunoViewModel>(aluno));
+                    marcadoresDestinos[chaveRetorno].Alunos.Add(_mapper.Map<AlunoViewModel>(aluno));
                 }
             }
         }
 
-        return marcadores.Values.ToList();
+        // Unifica os marcadoresDestinos dentro de marcadoresPartidas
+        foreach (var kvp in marcadoresDestinos)
+        {
+            if (marcadoresPartidas.TryGetValue(kvp.Key, out var marcadorExistente))
+            {
+                // Junta os alunos de destinos na lista existente
+                marcadorExistente.Alunos.AddRange(kvp.Value.Alunos);
+            }
+            else
+            {
+                // Se não existe, adiciona normalmente
+                marcadoresPartidas[kvp.Key] = kvp.Value;
+            }
+        }
+
+
+        return marcadoresPartidas.Values.ToList();
     }
 
     public async Task SalvarOrdemDoTrajetoAsync(int rotaId, List<Marcador> marcadoresOrdenados)
@@ -349,18 +358,7 @@ public class TrajetoService : ITrajetoService
                 z => z.EnderecoPartida,
                 z => z.EnderecoRetorno);
 
-        switch (rota.TipoRota)
-        {
-            case TipoRotaEnum.Ida:
-                marcadores.AddRange(ObterMarcadorPorRotaDirecao(alunos, TipoRotaEnum.Ida));
-                break;
-            case TipoRotaEnum.Volta:
-                marcadores.AddRange(ObterMarcadorPorRotaDirecao(alunos, TipoRotaEnum.Volta));
-                break;
-            default:
-                throw new BusinessRuleException("Tipo de rota inválida!");
-        }
-
+        marcadores.AddRange(ObterMarcadorPorRotaDirecao(alunos, rota.TipoRota, rotaId));
         return marcadores;
     }
 
@@ -397,7 +395,7 @@ public class TrajetoService : ITrajetoService
                 }
             }
 
-            marcadores = ObterMarcadorPorRotaDirecao(alunos, rota.TipoRota, ajusteAlunoRota);
+            marcadores = ObterMarcadorPorRotaDirecao(alunos, rota.TipoRota, rotaId, ajusteAlunoRota);
         }
         else
         {
@@ -437,6 +435,89 @@ public class TrajetoService : ITrajetoService
         }
 
         return marcadores;
+    }
+
+    /// <summary>
+    /// Gera o melhor trajeto para a rota especificada, otimizando a ordem dos marcadores.
+    /// Se a ordem do trajeto já existir, ela será atualizada com a nova rota ideal.
+    /// </summary>
+    /// <param name="rotaId"></param>
+    /// <returns></returns>
+    /// <exception cref="BusinessRuleException"></exception>
+    public async Task GerarMelhorTrajetoAsync(int rotaId)
+    {
+        var rota = await _rotaRepository
+            .BuscarUmAsync(x => x.Id == rotaId, z => z.AlunoRotas);
+
+        var alunosId = rota.AlunoRotas.Select(x => x.AlunoId).ToList();
+
+        var alunosResponse = await _pessoasAPI.ObterAlunoPorIdAsync(alunosId);
+        var alunos = alunosResponse.Data;
+
+        var ordemTrajeto = await _ordemTrajetoRepository.BuscarUmAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo, x => x.Marcadores);
+
+        // var saoPauloTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
+        // var nowUtc = DateTime.UtcNow;
+        // var ajusteAlunoRota = await _ajusteAlunoRotaRepository
+        //     .BuscarAsync(x =>
+        //         alunosId.Contains(x.AlunoId) && x.RotaId == rotaId && x.Data.Date == nowUtc.Date,
+        //         z => z.EnderecoDestino,
+        //         z => z.EnderecoPartida,
+        //         z => z.EnderecoRetorno);
+
+        var marcadores = ObterMarcadorPorRotaDirecao(alunos, rota.TipoRota, rotaId);
+        var origem = marcadores.First();
+        var destino = marcadores.Last();
+        var pontosIntermediarios = marcadores.Skip(1).Take(marcadores.Count - 2).ToList();
+        var rotaIdeal = new List<Marcador>();
+
+        if (pontosIntermediarios.Count > 1)
+        {
+            var rotaIdealResponse = await _googleDirectionsService.ObterRotaIdealAsync(origem, destino, pontosIntermediarios);
+            if (rotaIdealResponse.Sucesso is false || rotaIdealResponse.Data is null)
+            {
+                throw new BusinessRuleException("Não foi possível obter a rota ideal.");
+            }
+
+            rotaIdeal = rotaIdealResponse.Data;
+        }
+        else
+        {
+            rotaIdeal = [origem, .. pontosIntermediarios, destino];
+        }
+
+        if (ordemTrajeto is null)
+        {
+            ordemTrajeto = new OrdemTrajeto
+            {
+                RotaId = rotaId,
+            };
+            await _ordemTrajetoRepository.AdicionarAsync(ordemTrajeto);
+        }
+        else
+        {
+            await Parallel.ForEachAsync(ordemTrajeto.Marcadores, async (ordemTrajetoMarcador, _) =>
+            {
+                ordemTrajetoMarcador.Status = StatusEntityEnum.Deletado;
+                await Task.CompletedTask;
+            });
+
+            await _ordemTrajetoMarcadorRepository.AtualizarAsync(ordemTrajeto.Marcadores);
+        }
+
+        var ordemTrajetoMarcador = rotaIdeal.Select(rota =>
+        {
+            return new OrdemTrajetoMarcador
+            {
+                Status = StatusEntityEnum.Ativo,
+                OrdemTrajetoId = ordemTrajeto.Id,
+                TipoMarcador = rota.TipoMarcador,
+                Latitude = rota.Latitude,
+                Longitude = rota.Longitude,
+            };
+        });
+
+        await _ordemTrajetoMarcadorRepository.AdicionarAsync(ordemTrajetoMarcador);
     }
 
     public async Task<RotaHistoricoViewModel> RelatorioUltimoTrajetoAsync(int rotaId)

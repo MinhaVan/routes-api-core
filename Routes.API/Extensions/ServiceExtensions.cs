@@ -23,6 +23,7 @@ public static class ServiceExtensions
         services.AddScoped<IEnderecoService, EnderecoService>();
         services.AddScoped<IRotaService, RotaService>();
         services.AddScoped<ITrajetoService, TrajetoService>();
+        services.AddScoped<IGoogleDirectionsService, GoogleDirectionsService>();
         services.AddScoped<IAjusteEnderecoService, AjusteEnderecoService>();
         services.AddScoped<IVeiculoService, VeiculoService>();
         services.AddScoped<IAlunoRotaService, AlunoRotaService>();

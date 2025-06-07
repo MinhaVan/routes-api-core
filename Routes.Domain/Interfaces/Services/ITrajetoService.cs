@@ -7,6 +7,7 @@ namespace Routes.Domain.Interfaces.Services;
 
 public interface ITrajetoService
 {
+    Task GerarMelhorTrajetoAsync(int rotaId);
     Task AtualizarStatusAlunoTrajetoAsync(int alunoId, int rotaId, bool alunoEntrouNaVan);
     Task FinalizarTrajetoAsync(int rotaId);
     Task IniciarTrajetoAsync(int rotaId);

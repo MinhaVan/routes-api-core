@@ -19,6 +19,13 @@ public class TrajetoController : BaseController
         _trajetoService = trajetoService;
     }
 
+    [HttpPost("Rota/Gerar/{rotaId}")]
+    public async Task<IActionResult> GerarMelhorTrajetoAsync(int rotaId)
+    {
+        await _trajetoService.GerarMelhorTrajetoAsync(rotaId);
+        return Success();
+    }
+
     [HttpGet("Rota/{rotaId}/Destino")]
     public async Task<IActionResult> ObterDestinoAsync([FromRoute] int rotaId, [FromQuery] bool validarRotaOnline)
     {

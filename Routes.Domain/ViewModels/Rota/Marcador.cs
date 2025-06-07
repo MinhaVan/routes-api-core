@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Routes.Domain.ViewModels;
 using Routes.Domain.Enums;
+using System.Globalization;
 
 namespace Routes.Domain.ViewModels.Rota;
 
@@ -13,4 +13,6 @@ public class Marcador
     public double Longitude { get; set; }
     public virtual AlunoViewModel Aluno { get; set; }
     public virtual List<AlunoViewModel> Alunos { get; set; } = new();
+
+    public override string ToString() => $"{Latitude.ToString(CultureInfo.InvariantCulture)},{Longitude.ToString(CultureInfo.InvariantCulture)}";
 }
