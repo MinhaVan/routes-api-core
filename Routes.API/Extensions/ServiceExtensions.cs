@@ -28,6 +28,11 @@ public static class ServiceExtensions
         services.AddScoped<IVeiculoService, VeiculoService>();
         services.AddScoped<IAlunoRotaService, AlunoRotaService>();
         services.AddScoped<IMotoristaRotaService, MotoristaRotaService>();
+        services.AddScoped<IGestaoTrajetoService, GestaoTrajetoService>();
+        services.AddScoped<IMarcadorService, MarcadorService>();
+        services.AddScoped<IOrdemTrajetoService, OrdemTrajetoService>();
+        services.AddScoped<IRelatorioTrajetoService, RelatorioTrajetoService>();
+        services.AddScoped<IRotaOnlineService, RotaOnlineService>();
 
         Console.WriteLine("Configuração das services realizada com sucesso!");
 

@@ -10,14 +10,20 @@ namespace Routes.API.Controllers.v1;
 [ApiController]
 [Route("v1/[controller]")]
 [Authorize("Bearer")]
-public class TrajetoController : BaseController
+public class TrajetoController(
+    ITrajetoService trajetoService,
+    IGestaoTrajetoService gestaoTrajetoService,
+    IRelatorioTrajetoService relatorioTrajetoService,
+    IRotaOnlineService rotaOnlineService,
+    IMarcadorService marcadorService,
+    IOrdemTrajetoService ordemTrajetoService) : BaseController
 {
-    private readonly ITrajetoService _trajetoService;
-
-    public TrajetoController(ITrajetoService trajetoService)
-    {
-        _trajetoService = trajetoService;
-    }
+    private readonly IGestaoTrajetoService _gestaoTrajetoService = gestaoTrajetoService;
+    private readonly IRelatorioTrajetoService _relatorioTrajetoService = relatorioTrajetoService;
+    private readonly IRotaOnlineService _rotaOnlineService = rotaOnlineService;
+    private readonly ITrajetoService _trajetoService = trajetoService;
+    private readonly IMarcadorService _marcadorService = marcadorService;
+    private readonly IOrdemTrajetoService _ordemTrajetoService = ordemTrajetoService;
 
     [HttpPost("Rota/Gerar/{rotaId}")]
     public async Task<IActionResult> GerarMelhorTrajetoAsync(int rotaId)
@@ -37,7 +43,7 @@ public class TrajetoController : BaseController
     // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> SalvarOrdemDoTrajetoAsync([FromRoute] int rotaId, [FromBody] List<Marcador> body)
     {
-        await _trajetoService.SalvarOrdemDoTrajetoAsync(rotaId, body);
+        await _ordemTrajetoService.SalvarOrdemDoTrajetoAsync(rotaId, body);
         return Success();
     }
 
@@ -45,7 +51,7 @@ public class TrajetoController : BaseController
     // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> ObterTodosMarcadoresParaRotasAsync([FromRoute] int rotaId)
     {
-        var response = await _trajetoService.ObterTodosMarcadoresParaRotasAsync(rotaId);
+        var response = await _marcadorService.ObterTodosMarcadoresParaRotasAsync(rotaId);
         return Success(response);
     }
 
@@ -61,7 +67,7 @@ public class TrajetoController : BaseController
     // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> IniciarTrajetoAsync([FromRoute] int rotaId)
     {
-        await _trajetoService.IniciarTrajetoAsync(rotaId);
+        await _gestaoTrajetoService.IniciarTrajetoAsync(rotaId);
         return Success();
     }
 
@@ -69,7 +75,7 @@ public class TrajetoController : BaseController
     // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> FinalizarTrajetoAsync([FromRoute] int rotaId)
     {
-        await _trajetoService.FinalizarTrajetoAsync(rotaId);
+        await _gestaoTrajetoService.FinalizarTrajetoAsync(rotaId);
         return Success();
     }
 
@@ -85,13 +91,13 @@ public class TrajetoController : BaseController
     // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> RelatorioTrajetoAsync([FromRoute] int rotaId)
     {
-        var response = await _trajetoService.RelatorioUltimoTrajetoAsync(rotaId);
+        var response = await _relatorioTrajetoService.RelatorioUltimoTrajetoAsync(rotaId);
         return Success(response);
     }
 
     [HttpGet("Rota/Online")]
     public async Task<IActionResult> RotaOnlineAsync()
     {
-        return Success(await _trajetoService.RotaOnlineParaMotoristaAsync());
+        return Success(await _rotaOnlineService.RotaOnlineParaMotoristaAsync());
     }
 }
