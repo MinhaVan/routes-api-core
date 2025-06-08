@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Routes.Data.Utils;
 using Routes.Domain.Interfaces.APIs;
@@ -13,19 +12,14 @@ using Routes.Domain.ViewModels;
 
 namespace Routes.Data.APIs;
 
-public class PessoasAPI : IPessoasAPI
+public class PessoasAPI(
+    IHttpClientFactory httpClientFactory,
+    IUserContext userContext,
+    ILogger<PessoasAPI> logger) : IPessoasAPI
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<PessoasAPI> _logger;
-    private readonly IUserContext _context;
-
-    public PessoasAPI(IHttpClientFactory httpClientFactory, IUserContext userContext, ILogger<PessoasAPI> logger)
-    {
-        _logger = logger;
-        _context = userContext;
-        _httpClient = httpClientFactory.CreateClient("api-pessoas");
-    }
-
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("api-pessoas");
+    private readonly ILogger<PessoasAPI> _logger = logger;
+    private readonly IUserContext _context = userContext;
     public async Task<BaseResponse<List<AlunoViewModel>>> ObterAlunoPorIdAsync(List<int> alunosId)
     {
         _httpClient.DefaultRequestHeaders.Remove("Authorization");

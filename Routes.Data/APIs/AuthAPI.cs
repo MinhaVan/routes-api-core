@@ -10,18 +10,14 @@ using Routes.Domain.Interfaces.Repository;
 
 namespace Routes.Data.APIs;
 
-public class AuthAPI : IAuthApi
+public class AuthAPI(
+    IHttpClientFactory httpClientFactory,
+    IUserContext userContext,
+    ILogger<AuthAPI> logger) : IAuthApi
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<AuthAPI> _logger;
-    private readonly IUserContext _context;
-
-    public AuthAPI(IHttpClientFactory httpClientFactory, IUserContext userContext, ILogger<AuthAPI> logger)
-    {
-        _httpClient = httpClientFactory.CreateClient("api-auth");
-        _logger = logger;
-        _context = userContext;
-    }
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("api-auth");
+    private readonly ILogger<AuthAPI> _logger = logger;
+    private readonly IUserContext _context = userContext;
 
     public async Task<BaseResponse<UsuarioViewModel>> RegistrarAsync(UsuarioNovoViewModel user)
     {
@@ -43,6 +39,7 @@ public class AuthAPI : IAuthApi
     public async Task<BaseResponse<object>> AtualizarAsync(UsuarioAtualizarViewModel user)
     {
         _logger.LogInformation($"Enviando requisição para atualizar usuário - Dados: {user.ToJson()}");
+        _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
         var response = await _httpClient.PutAsJsonAsync("v1/usuario", user);
 
@@ -61,6 +58,7 @@ public class AuthAPI : IAuthApi
     public async Task<BaseResponse<UsuarioViewModel>> ObterUsuarioAsync(int userId)
     {
         _logger.LogInformation($"Enviando requisição para obter usuário - ID: {userId}");
+        _httpClient.DefaultRequestHeaders.Remove("Authorization");
         _httpClient.DefaultRequestHeaders.Add("Authorization", _context.Token);
         var response = await _httpClient.GetAsync($"v1/usuario/{userId}");
 
