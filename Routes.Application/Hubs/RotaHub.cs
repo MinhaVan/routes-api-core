@@ -8,37 +8,22 @@ using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Routes.Domain.ViewModels.WebSocket;
 using Routes.Domain.Interfaces.APIs;
-using System.Collections.Concurrent;
 using Routes.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
-using Routes.Data.Utils;
-using Microsoft.AspNetCore.Http;
 
 namespace Routes.Service.Hubs;
 
 [Authorize]
-public class RotaHub : Hub
+public class RotaHub(
+    ILogger<RotaHub> logger,
+    IPessoasAPI pessoasAPI,
+    IBaseRepository<Rota> rotaRepository,
+    ILocalizacaoCache localizacaoCache) : Hub
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILogger<RotaHub> _logger;
-    private readonly IBaseRepository<Rota> _rotaRepository;
-    private readonly IPessoasAPI _pessoasAPI;
-    private static readonly ConcurrentDictionary<int, BaseResponse<EnviarLocalizacaoWebSocketResponse>> _ultimaLocalizacaoPorRota = new();
-    private readonly ILocalizacaoCache _localizacaoCache;
-
-    public RotaHub(
-        ILogger<RotaHub> logger,
-        IPessoasAPI pessoasAPI,
-        IBaseRepository<Rota> rotaRepository,
-        IHttpContextAccessor httpContextAccessor,
-        ILocalizacaoCache localizacaoCache)
-    {
-        _logger = logger;
-        _localizacaoCache = localizacaoCache;
-        _httpContextAccessor = httpContextAccessor;
-        _pessoasAPI = pessoasAPI;
-        _rotaRepository = rotaRepository;
-    }
+    private readonly ILogger<RotaHub> _logger = logger;
+    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
+    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
+    private readonly ILocalizacaoCache _localizacaoCache = localizacaoCache;
 
     #region Public Methods
 
