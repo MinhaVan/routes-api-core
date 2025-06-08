@@ -12,23 +12,16 @@ using Routes.Service.Exceptions;
 
 namespace Routes.Service.Implementations;
 
-public class AlunoRotaService : IAlunoRotaService
+public class AlunoRotaService(
+    IPessoasAPI pessoasAPI,
+    IBaseRepository<AlunoRota> AlunoRotaRepository,
+    IBaseRepository<Rota> rotaRepository,
+    IMapper map) : IAlunoRotaService
 {
-    private readonly IMapper _mapper;
-    private readonly IBaseRepository<AlunoRota> _alunoRotaRepository;
-    private readonly IBaseRepository<Rota> _rotaRepository;
-    private readonly IPessoasAPI _pessoasAPI;
-    public AlunoRotaService(
-        IPessoasAPI pessoasAPI,
-        IBaseRepository<AlunoRota> AlunoRotaRepository,
-        IBaseRepository<Rota> rotaRepository,
-        IMapper map)
-    {
-        _pessoasAPI = pessoasAPI;
-        _mapper = map;
-        _rotaRepository = rotaRepository;
-        _alunoRotaRepository = AlunoRotaRepository;
-    }
+    private readonly IMapper _mapper = map;
+    private readonly IBaseRepository<AlunoRota> _alunoRotaRepository = AlunoRotaRepository;
+    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
+    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
 
     public async Task AdicionarAsync(AlunoRotaViewModel alunoRota)
     {

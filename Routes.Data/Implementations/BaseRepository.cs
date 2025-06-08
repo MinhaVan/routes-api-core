@@ -1,7 +1,6 @@
 using Routes.Data.Context;
 using Routes.Domain.Interfaces.Repository;
 using Routes.Domain.Models;
-using Routes.Domain.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

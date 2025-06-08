@@ -1,46 +1,23 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
-using Routes.Domain.Interfaces.APIs;
 using Routes.Domain.Interfaces.Repository;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
-using Routes.Domain.ViewModels.Rota;
-using Routes.Service.Configuration;
-using Routes.Service.Exceptions;
 
 namespace Routes.Service.Implementations;
 
-public class EnderecoService : IEnderecoService
+public class EnderecoService(
+    IMapper mapper,
+    IBaseRepository<Endereco> enderecoRepository,
+    IGoogleDirectionsService googleDirectionsService,
+    IUserContext userContext) : IEnderecoService
 {
-    private readonly IMapper _mapper;
-    private readonly SecretManager _secretManager;
-    private readonly IUserContext _userContext;
-    private readonly IBaseRepository<Endereco> _enderecoRepository;
-    private readonly IAuthApi _authApi;
-    private readonly IGoogleDirectionsService _googleDirectionsService;
-    public EnderecoService(
-        IMapper mapper,
-        IAuthApi authApi,
-        IBaseRepository<Endereco> enderecoRepository,
-        SecretManager secretManager,
-        IGoogleDirectionsService googleDirectionsService,
-        IUserContext userContext)
-    {
-        _secretManager = secretManager;
-        _googleDirectionsService = googleDirectionsService;
-        _mapper = mapper;
-        _userContext = userContext;
-        _authApi = authApi;
-        _enderecoRepository = enderecoRepository;
-    }
-
+    private readonly IMapper _mapper = mapper;
+    private readonly IUserContext _userContext = userContext;
+    private readonly IBaseRepository<Endereco> _enderecoRepository = enderecoRepository;
+    private readonly IGoogleDirectionsService _googleDirectionsService = googleDirectionsService;
     public async Task AdicionarAsync(EnderecoAdicionarViewModel enderecoAdicionarViewModel)
     {
         var model = _mapper.Map<Endereco>(enderecoAdicionarViewModel);

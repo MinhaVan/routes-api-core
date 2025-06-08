@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using AutoMapper;
 using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.APIs;
 using Routes.Domain.Interfaces.Repository;
@@ -10,26 +9,14 @@ using Routes.Service.Exceptions;
 
 namespace Routes.Service.Implementations;
 
-public class MotoristaRotaService : IMotoristaRotaService
-{
-    private readonly IMapper _mapper;
-    private readonly IUserContext _userContext;
-    private readonly IAuthApi _authApi;
-    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
-    private readonly IPessoasAPI _pessoasAPI;
-    public MotoristaRotaService(
-        IMapper mapper,
-        IAuthApi authApi,
+public class MotoristaRotaService(
         IPessoasAPI pessoasAPI,
         IBaseRepository<MotoristaRota> motoristaRotaRepository,
-        IUserContext userContext)
-    {
-        _pessoasAPI = pessoasAPI;
-        _motoristaRotaRepository = motoristaRotaRepository;
-        _authApi = authApi;
-        _mapper = mapper;
-        _userContext = userContext;
-    }
+        IUserContext userContext) : IMotoristaRotaService
+{
+    private readonly IUserContext _userContext = userContext;
+    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository = motoristaRotaRepository;
+    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
 
     public async Task VincularAsync(MotoristaVincularViewModel request)
     {

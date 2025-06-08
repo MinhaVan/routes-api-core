@@ -11,36 +11,25 @@ using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Routes.Domain.Interfaces.APIs;
-using Routes.Data.Utils;
 
 namespace Routes.Service.Implementations;
 
-public class RotaService : IRotaService
+public class RotaService(
+    IMapper mapper,
+    IUserContext userContext,
+    IPessoasAPI pessoasAPI,
+    IRotaHistoricoRepository rotaHistoricoRepository,
+    IBaseRepository<MotoristaRota> motoristaRotaRepository,
+    IBaseRepository<AlunoRota> alunoRotaRepository,
+    IBaseRepository<Rota> rotaRepository) : IRotaService
 {
-    private readonly IMapper _mapper;
-    private readonly IUserContext _userContext;
-    private readonly IBaseRepository<Rota> _rotaRepository;
-    private readonly IBaseRepository<AlunoRota> _alunoRotaRepository;
-    private readonly IPessoasAPI _pessoasAPI;
-    private readonly IRotaHistoricoRepository _rotaHistoricoRepository;
-    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
-    public RotaService(
-        IMapper mapper,
-        IUserContext userContext,
-        IPessoasAPI pessoasAPI,
-        IRotaHistoricoRepository rotaHistoricoRepository,
-        IBaseRepository<MotoristaRota> motoristaRotaRepository,
-        IBaseRepository<AlunoRota> alunoRotaRepository,
-        IBaseRepository<Rota> rotaRepository)
-    {
-        _userContext = userContext;
-        _mapper = mapper;
-        _pessoasAPI = pessoasAPI;
-        _rotaRepository = rotaRepository;
-        _alunoRotaRepository = alunoRotaRepository;
-        _motoristaRotaRepository = motoristaRotaRepository;
-        _rotaHistoricoRepository = rotaHistoricoRepository;
-    }
+    private readonly IMapper _mapper = mapper;
+    private readonly IUserContext _userContext = userContext;
+    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
+    private readonly IBaseRepository<AlunoRota> _alunoRotaRepository = alunoRotaRepository;
+    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
+    private readonly IRotaHistoricoRepository _rotaHistoricoRepository = rotaHistoricoRepository;
+    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository = motoristaRotaRepository;
 
     public async Task<RotaViewModel> AdicionarAsync(RotaAdicionarViewModel rotaAdicionarViewModel)
     {
