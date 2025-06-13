@@ -20,7 +20,6 @@ public class RotaHubTests
     private readonly Mock<ILogger<RotaHub>> _loggerMock = new();
     private readonly Mock<IPessoasAPI> _pessoasApiMock = new();
     private readonly Mock<IBaseRepository<Rota>> _rotaRepoMock = new();
-    private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock = new();
     private readonly Mock<ILocalizacaoCache> _localizacaoCacheMock = new();
     private readonly Mock<IHubCallerClients> _clientsMock = new();
     private readonly Mock<IGroupManager> _groupsMock = new();
@@ -32,7 +31,6 @@ public class RotaHubTests
             _loggerMock.Object,
             _pessoasApiMock.Object,
             _rotaRepoMock.Object,
-            _httpContextAccessorMock.Object,
             _localizacaoCacheMock.Object
         )
         {
