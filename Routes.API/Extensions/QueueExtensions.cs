@@ -10,16 +10,14 @@ public static class QueueExtensions
 {
     public static IServiceCollection AddQueue(this IServiceCollection services, SecretManager secretManager)
     {
-        var configuration = secretManager.Infra.RabbitMQ.Split(',');
-
         services.AddSingleton<IConnectionFactory>(sp =>
         {
             return new ConnectionFactory
             {
-                UserName = configuration[0],
-                Password = configuration[1],
-                HostName = configuration[2],
-                Port = int.Parse(configuration[3])
+                UserName = secretManager.Infra.RabbitMQ.UserName,
+                Password = secretManager.Infra.RabbitMQ.Password,
+                HostName = secretManager.Infra.RabbitMQ.Host,
+                Port = int.Parse(secretManager.Infra.RabbitMQ.Port)
             };
         });
 

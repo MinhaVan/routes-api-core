@@ -19,7 +19,15 @@ public class SecretManager
 public class Infra
 {
     public string Redis { get; set; }
-    public string RabbitMQ { get; set; }
+    public RabbitMqSettings RabbitMQ { get; set; }
+}
+
+public class RabbitMqSettings
+{
+    public string Host { get; set; }
+    public string Port { get; set; }
+    public string UserName { get; set; }
+    public string Password { get; set; }
 }
 
 public class IpRateLimiting
