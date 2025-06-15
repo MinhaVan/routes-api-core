@@ -149,7 +149,13 @@ public class RotaService(
             x => x.Status == StatusEntityEnum.Ativo && rotasId.Contains(x.Id),
             x => x.Historicos);
 
-        return _mapper.Map<List<RotaViewModel>>(rotas);
+        var response = _mapper.Map<List<RotaViewModel>>(rotas);
+        response.ForEach(x =>
+        {
+            x.Historicos = x.Historicos.OrderByDescending(h => h.DataRealizacao).ToList();
+        });
+
+        return response;
     }
 
     public async Task<List<RotaViewModel>> ObterRotaDoMotoristaAsync(int usuarioId, bool filtrarApenasHoje = true)
