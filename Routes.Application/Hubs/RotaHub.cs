@@ -45,7 +45,7 @@ public class RotaHub(
             Sucesso = true
         };
 
-        _rabbitMqRepository.Publish(RabbitMqQueues.EnviarLocalizacao, response, shouldThrowException: false);
+        _rabbitMqRepository.Publish(RabbitMqQueues.EnviarLocalizacao, response.Data, shouldThrowException: false);
 
         var tasks = new[]
         {
@@ -79,13 +79,14 @@ public class RotaHub(
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, rotaId.ToString());
-            var ultimaLocalizacao = await _localizacaoCache.GetAsync<BaseResponse<EnviarLocalizacaoWebSocketResponse>>(ObterRedisKey(rotaId))
-                ?? new BaseResponse<EnviarLocalizacaoWebSocketResponse>
-                {
-                    Data = null,
-                    Mensagem = "Nenhuma localização disponível no momento.",
-                    Sucesso = true
-                };
+
+            var localizacaoCache = await _localizacaoCache.GetAsync<EnviarLocalizacaoWebSocketResponse>(ObterRedisKey(rotaId));
+            var ultimaLocalizacao = new BaseResponse<EnviarLocalizacaoWebSocketResponse>
+            {
+                Data = localizacaoCache,
+                Mensagem = localizacaoCache is null ? "Nenhuma localização disponível no momento." : "Localização recebida com sucesso!",
+                Sucesso = true
+            };
 
             await Clients.Caller.SendAsync("ReceberLocalizacao", ultimaLocalizacao);
         }
