@@ -37,9 +37,19 @@ public static class RepositoryExtensions
 
     public static IServiceCollection AddQueue(this IServiceCollection services, SecretManager secretManager)
     {
-        var connection = secretManager.ConnectionStrings.RabbitConnection.Split(':');
+        var configuration = secretManager.Infra.RabbitMQ.Split(':');
 
+        services.AddSingleton<IConnectionFactory>(sp =>
+        {
+            return new ConnectionFactory
+            {
+                UserName = configuration[0],
+                Password = configuration[1],
+                HostName = configuration[2]
+            };
+        });
 
+        services.AddScoped<IRabbitMqRepository, RabbitMqRepository>();
         return services;
     }
 }

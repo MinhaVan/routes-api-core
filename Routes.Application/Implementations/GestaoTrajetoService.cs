@@ -9,14 +9,11 @@ using Routes.Service.Exceptions;
 namespace Routes.Application.Implementations;
 
 public class GestaoTrajetoService(
-    IBaseRepository<Rota> rotaRepository,
-    IBaseRepository<RotaHistorico> rotaHistoricoRepository,
-    ILogger<GestaoTrajetoService> logger
+    IBaseRepository<Rota> _rotaRepository,
+    IBaseRepository<RotaHistorico> _rotaHistoricoRepository,
+    ILogger<GestaoTrajetoService> _logger
 ) : IGestaoTrajetoService
 {
-    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
-    private readonly IBaseRepository<RotaHistorico> _rotaHistoricoRepository = rotaHistoricoRepository;
-    private readonly ILogger<GestaoTrajetoService> _logger = logger;
     public async Task FinalizarTrajetoAsync(int rotaId)
     {
         try

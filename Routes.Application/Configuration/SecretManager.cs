@@ -12,8 +12,14 @@ public class SecretManager
     public Asaas Asaas { get; set; }
     public Google Google { get; set; }
     public URL URL { get; set; }
+    public Infra Infra { get; set; }
     public string AllowedHosts { get; set; }
+}
 
+public class Infra
+{
+    public string Redis { get; set; }
+    public string RabbitMQ { get; set; }
 }
 
 public class IpRateLimiting
@@ -41,8 +47,6 @@ public class AuthenticatedRateLimit
 public class ConnectionStrings
 {
     public string DefaultConnection { get; set; }
-    public string RedisConnection { get; set; }
-    public string RabbitConnection { get; set; }
 }
 
 public class Logging

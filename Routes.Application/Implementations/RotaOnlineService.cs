@@ -13,18 +13,13 @@ using Routes.Service.Exceptions;
 namespace Routes.Application.Implementations;
 
 public class RotaOnlineService(
-    IPessoasAPI pessoasAPI,
-    IUserContext userContext,
-    IBaseRepository<MotoristaRota> motoristaRotaRepository,
-    IBaseRepository<RotaHistorico> rotaHistoricoRepository,
-    IMapper mapper
+    IPessoasAPI _pessoasAPI,
+    IUserContext _userContext,
+    IBaseRepository<MotoristaRota> _motoristaRotaRepository,
+    IBaseRepository<RotaHistorico> _rotaHistoricoRepository,
+    IMapper _mapper
 ) : IRotaOnlineService
 {
-    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
-    private readonly IUserContext _userContext = userContext;
-    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository = motoristaRotaRepository;
-    private readonly IBaseRepository<RotaHistorico> _rotaHistoricoRepository = rotaHistoricoRepository;
-    private readonly IMapper _mapper = mapper;
     public async Task<RotaViewModel> RotaOnlineParaMotoristaAsync()
     {
         var obterMotoristaPorIdResponse = await _pessoasAPI.ObterMotoristaPorUsuarioIdAsync(_userContext.UserId);

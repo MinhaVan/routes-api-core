@@ -15,21 +15,14 @@ using Routes.Domain.Interfaces.APIs;
 namespace Routes.Service.Implementations;
 
 public class RotaService(
-    IMapper mapper,
-    IUserContext userContext,
-    IPessoasAPI pessoasAPI,
-    IRotaHistoricoRepository rotaHistoricoRepository,
-    IBaseRepository<MotoristaRota> motoristaRotaRepository,
-    IBaseRepository<AlunoRota> alunoRotaRepository,
-    IBaseRepository<Rota> rotaRepository) : IRotaService
+    IMapper _mapper,
+    IUserContext _userContext,
+    IPessoasAPI _pessoasAPI,
+    IRotaHistoricoRepository _rotaHistoricoRepository,
+    IBaseRepository<MotoristaRota> _motoristaRotaRepository,
+    IBaseRepository<AlunoRota> _alunoRotaRepository,
+    IBaseRepository<Rota> _rotaRepository) : IRotaService
 {
-    private readonly IMapper _mapper = mapper;
-    private readonly IUserContext _userContext = userContext;
-    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
-    private readonly IBaseRepository<AlunoRota> _alunoRotaRepository = alunoRotaRepository;
-    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
-    private readonly IRotaHistoricoRepository _rotaHistoricoRepository = rotaHistoricoRepository;
-    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository = motoristaRotaRepository;
 
     public async Task<RotaViewModel> AdicionarAsync(RotaAdicionarViewModel rotaAdicionarViewModel)
     {

@@ -12,26 +12,13 @@ using Routes.Service.Exceptions;
 
 namespace Routes.Service.Implementations;
 
-public class VeiculoService : IVeiculoService
+public class VeiculoService(
+    IMapper _mapper,
+    IUserContext _userContext,
+    IPessoasAPI _pessoasAPI,
+    IBaseRepository<Veiculo> _veiculoRepository,
+    IBaseRepository<MotoristaRota> _motoristaRotaRepository) : IVeiculoService
 {
-    private readonly IMapper _mapper;
-    private readonly IUserContext _userContext;
-    private readonly IPessoasAPI _pessoasAPI;
-    private readonly IBaseRepository<Veiculo> _veiculoRepository;
-    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository;
-    public VeiculoService(
-        IMapper mapper,
-        IUserContext userContext,
-        IPessoasAPI pessoasAPI,
-        IBaseRepository<Veiculo> veiculoRepository,
-        IBaseRepository<MotoristaRota> motoristaRotaRepository)
-    {
-        _motoristaRotaRepository = motoristaRotaRepository;
-        _userContext = userContext;
-        _mapper = mapper;
-        _pessoasAPI = pessoasAPI;
-        _veiculoRepository = veiculoRepository;
-    }
 
     public async Task AdicionarAsync(List<VeiculoAdicionarViewModel> veiculosViewModels)
     {

@@ -17,33 +17,20 @@ using Routes.Domain.Interfaces.APIs;
 namespace Routes.Service.Implementations;
 
 public class TrajetoService(
-    ILogger<TrajetoService> logger,
-    IMapper mapper,
-    IPessoasAPI pessoasAPI,
-    IMarcadorService marcadorService,
-    IOrdemTrajetoService ordemTrajetoService,
-    IBaseRepository<AjusteAlunoRota> ajusteAlunoRotaRepository,
-    IBaseRepository<Endereco> enderecoRepository,
-    IRotaHistoricoRepository rotaHistoricoRepository,
-    IBaseRepository<OrdemTrajeto> ordemTrajetoRepository,
-    IBaseRepository<AlunoRotaHistorico> alunoRotaHistoricoRepository,
-    IGoogleDirectionsService googleDirectionsService,
-    IBaseRepository<Rota> rotaRepository
+    ILogger<TrajetoService> _logger,
+    IMapper _mapper,
+    IPessoasAPI _pessoasAPI,
+    IMarcadorService _marcadorService,
+    IOrdemTrajetoService _ordemTrajetoService,
+    IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository,
+    IBaseRepository<Endereco> _enderecoRepository,
+    IRotaHistoricoRepository _rotaHistoricoRepository,
+    IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository,
+    IBaseRepository<AlunoRotaHistorico> _alunoRotaHistoricoRepository,
+    IGoogleDirectionsService _googleDirectionsService,
+    IBaseRepository<Rota> _rotaRepository
 ) : ITrajetoService
 {
-    private readonly IMarcadorService _marcadorService = marcadorService;
-    private readonly ILogger<TrajetoService> _logger = logger;
-    private readonly IMapper _mapper = mapper;
-    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
-    private readonly IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository = ajusteAlunoRotaRepository;
-    private readonly IBaseRepository<Endereco> _enderecoRepository = enderecoRepository;
-    private readonly IRotaHistoricoRepository _rotaHistoricoRepository = rotaHistoricoRepository;
-    private readonly IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository = ordemTrajetoRepository;
-    private readonly IBaseRepository<AlunoRotaHistorico> _alunoRotaHistoricoRepository = alunoRotaHistoricoRepository;
-    private readonly IGoogleDirectionsService _googleDirectionsService = googleDirectionsService;
-    private readonly IOrdemTrajetoService _ordemTrajetoService = ordemTrajetoService;
-    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
-
     public async Task AtualizarStatusAlunoTrajetoAsync(int alunoId, int rotaId, bool alunoEntrouNaVan)
     {
         try

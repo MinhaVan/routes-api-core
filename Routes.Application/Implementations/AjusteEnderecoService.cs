@@ -17,15 +17,11 @@ using Routes.Domain.Interfaces.APIs;
 namespace Routes.Service.Implementations;
 
 public class AjusteEnderecoService(
-    IMapper mapper,
-    IPessoasAPI pessoasAPI,
-    ILogger<AjusteEnderecoService> logger,
-    IBaseRepository<AjusteAlunoRota> ajusteAlunoRotaRepository) : IAjusteEnderecoService
+    IMapper _mapper,
+    IPessoasAPI _pessoasAPI,
+    ILogger<AjusteEnderecoService> _logger,
+    IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository) : IAjusteEnderecoService
 {
-    private readonly ILogger<AjusteEnderecoService> _logger = logger;
-    private readonly IMapper _mapper = mapper;
-    private readonly IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository = ajusteAlunoRotaRepository;
-    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
 
     public async Task<List<RotaAjusteEnderecoViewModel>> ObterAjusteEnderecoAsync(int AlunoId, int rotaId)
     {

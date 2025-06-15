@@ -14,12 +14,10 @@ namespace Routes.Application.Implementations;
 
 public class GoogleDirectionsService(
     IHttpClientFactory httpClientFactory,
-    SecretManager secretManager
+    SecretManager _secretManager
 ) : IGoogleDirectionsService
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("api-googlemaps");
-    private readonly SecretManager _secretManager = secretManager;
-
     public async Task<Marcador> ObterMarcadorAsync(string endereco)
     {
         var requestUri = $"{_secretManager.Google.BaseUrl}/geocode/json?address={Uri.EscapeDataString(endereco)}&key={_secretManager.Google.Key}";

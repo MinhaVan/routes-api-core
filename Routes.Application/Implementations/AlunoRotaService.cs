@@ -13,16 +13,11 @@ using Routes.Service.Exceptions;
 namespace Routes.Service.Implementations;
 
 public class AlunoRotaService(
-    IPessoasAPI pessoasAPI,
-    IBaseRepository<AlunoRota> AlunoRotaRepository,
-    IBaseRepository<Rota> rotaRepository,
-    IMapper map) : IAlunoRotaService
+    IPessoasAPI _pessoasAPI,
+    IBaseRepository<AlunoRota> _alunoRotaRepository,
+    IBaseRepository<Rota> _rotaRepository,
+    IMapper _mapper) : IAlunoRotaService
 {
-    private readonly IMapper _mapper = map;
-    private readonly IBaseRepository<AlunoRota> _alunoRotaRepository = AlunoRotaRepository;
-    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
-    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
-
     public async Task AdicionarAsync(AlunoRotaViewModel alunoRota)
     {
         await _alunoRotaRepository.AdicionarAsync(_mapper.Map<AlunoRota>(alunoRota));

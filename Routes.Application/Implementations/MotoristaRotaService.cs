@@ -10,13 +10,10 @@ using Routes.Service.Exceptions;
 namespace Routes.Service.Implementations;
 
 public class MotoristaRotaService(
-        IPessoasAPI pessoasAPI,
-        IBaseRepository<MotoristaRota> motoristaRotaRepository,
-        IUserContext userContext) : IMotoristaRotaService
+    IPessoasAPI _pessoasAPI,
+    IBaseRepository<MotoristaRota> _motoristaRotaRepository,
+    IUserContext _userContext) : IMotoristaRotaService
 {
-    private readonly IUserContext _userContext = userContext;
-    private readonly IBaseRepository<MotoristaRota> _motoristaRotaRepository = motoristaRotaRepository;
-    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
 
     public async Task VincularAsync(MotoristaVincularViewModel request)
     {

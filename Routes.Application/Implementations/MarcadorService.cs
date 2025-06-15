@@ -14,15 +14,11 @@ using Routes.Domain.ViewModels.Rota;
 namespace Routes.Application.Implementations;
 
 public class MarcadorService(
-    IPessoasAPI pessoasAPI,
-    IBaseRepository<Rota> rotaRepository,
-    IBaseRepository<AjusteAlunoRota> ajusteAlunoRotaRepository,
-    IMapper mapper) : IMarcadorService
+    IPessoasAPI _pessoasAPI,
+    IBaseRepository<Rota> _rotaRepository,
+    IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository,
+    IMapper _mapper) : IMarcadorService
 {
-    private readonly IMapper _mapper = mapper;
-    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
-    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
-    private readonly IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository = ajusteAlunoRotaRepository;
     public async Task<List<Marcador>> ObterTodosMarcadoresParaRotasAsync(int rotaId)
     {
         var marcadores = new List<Marcador>();

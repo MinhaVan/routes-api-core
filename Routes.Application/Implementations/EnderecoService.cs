@@ -9,15 +9,11 @@ using Routes.Domain.ViewModels;
 namespace Routes.Service.Implementations;
 
 public class EnderecoService(
-    IMapper mapper,
-    IBaseRepository<Endereco> enderecoRepository,
-    IGoogleDirectionsService googleDirectionsService,
-    IUserContext userContext) : IEnderecoService
+    IMapper _mapper,
+    IBaseRepository<Endereco> _enderecoRepository,
+    IGoogleDirectionsService _googleDirectionsService,
+    IUserContext _userContext) : IEnderecoService
 {
-    private readonly IMapper _mapper = mapper;
-    private readonly IUserContext _userContext = userContext;
-    private readonly IBaseRepository<Endereco> _enderecoRepository = enderecoRepository;
-    private readonly IGoogleDirectionsService _googleDirectionsService = googleDirectionsService;
     public async Task AdicionarAsync(EnderecoAdicionarViewModel enderecoAdicionarViewModel)
     {
         var model = _mapper.Map<Endereco>(enderecoAdicionarViewModel);

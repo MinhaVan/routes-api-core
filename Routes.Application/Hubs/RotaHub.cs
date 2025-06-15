@@ -8,49 +8,48 @@ using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Routes.Domain.ViewModels.WebSocket;
 using Routes.Domain.Interfaces.APIs;
-using Routes.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
+using Routes.Domain.Interfaces.Repositories;
+using Routes.Domain.Utils;
 
 namespace Routes.Service.Hubs;
 
 [Authorize]
 public class RotaHub(
-    ILogger<RotaHub> logger,
-    IPessoasAPI pessoasAPI,
-    IBaseRepository<Rota> rotaRepository,
-    ILocalizacaoCache localizacaoCache) : Hub
+    ILogger<RotaHub> _logger,
+    IPessoasAPI _pessoasAPI,
+    IBaseRepository<Rota> _rotaRepository,
+    IRabbitMqRepository _rabbitMqRepository,
+    IRedisRepository _localizacaoCache) : Hub
 {
-    private readonly ILogger<RotaHub> _logger = logger;
-    private readonly IBaseRepository<Rota> _rotaRepository = rotaRepository;
-    private readonly IPessoasAPI _pessoasAPI = pessoasAPI;
-    private readonly ILocalizacaoCache _localizacaoCache = localizacaoCache;
 
     #region Public Methods
 
     public async Task EnviarLocalizacao(EnviarLocalizacaoWebSocketRequest data)
     {
-        if (data == null)
+        if (data is null)
             return;
 
         var response = new BaseResponse<EnviarLocalizacaoWebSocketResponse>
         {
             Data = new EnviarLocalizacaoWebSocketResponse(
-                data.Latitude,
-                data.Longitude,
-                data.RotaId,
-                data.AlunoId,
-                data.Destino.Latitude,
-                data.Destino.Longitude,
-                data.TipoMensagem
-            ),
+            data.Latitude,
+            data.Longitude,
+            data.RotaId,
+            data.AlunoId,
+            data.Destino.Latitude,
+            data.Destino.Longitude,
+            data.TipoMensagem
+        ),
             Mensagem = "Localização recebida com sucesso!",
             Sucesso = true
         };
 
-        await _localizacaoCache.SalvarUltimaLocalizacaoAsync(data.RotaId, response);
+        _rabbitMqRepository.Publish(RabbitMqQueues.EnviarLocalizacao, response, shouldThrowException: false);
 
         var tasks = new[]
         {
+            _localizacaoCache.SetAsync(ObterRedisKey(data.RotaId), response),
             Clients.Group(data.RotaId.ToString()).SendAsync("ReceberLocalizacao", response)
         };
 
@@ -80,7 +79,7 @@ public class RotaHub(
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, rotaId.ToString());
-            var ultimaLocalizacao = await _localizacaoCache.ObterUltimaLocalizacaoAsync(rotaId)
+            var ultimaLocalizacao = await _localizacaoCache.GetAsync<BaseResponse<EnviarLocalizacaoWebSocketResponse>>(ObterRedisKey(rotaId))
                 ?? new BaseResponse<EnviarLocalizacaoWebSocketResponse>
                 {
                     Data = null,
@@ -97,7 +96,6 @@ public class RotaHub(
         }
     }
 
-
     public async Task RemoverResponsavelDaRota(int rotaId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, rotaId.ToString());
@@ -106,6 +104,9 @@ public class RotaHub(
     #endregion Public Methods
 
     #region Private Methods
+
+    public string ObterRedisKey(int rotaId)
+        => string.Format(KeyRedis.EnviarLocalizacao, rotaId);
 
     private async Task<bool> ValidarResponsavel(int rotaId, string accessToken)
     {

@@ -11,11 +11,9 @@ using Routes.Domain.ViewModels.Rota;
 namespace Routes.Application.Implementations;
 
 public class OrdemTrajetoService(
-    IBaseRepository<OrdemTrajetoMarcador> ordemTrajetoMarcadorRepository,
-    IBaseRepository<OrdemTrajeto> ordemTrajetoRepository) : IOrdemTrajetoService
+    IBaseRepository<OrdemTrajetoMarcador> _ordemTrajetoMarcadorRepository,
+    IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository) : IOrdemTrajetoService
 {
-    private readonly IBaseRepository<OrdemTrajetoMarcador> _ordemTrajetoMarcadorRepository = ordemTrajetoMarcadorRepository;
-    private readonly IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository = ordemTrajetoRepository;
     public async Task SalvarOrdemDoTrajetoAsync(int rotaId, List<Marcador> marcadoresOrdenados)
     {
         var ordemTrajeto = await _ordemTrajetoRepository.BuscarUmAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo);
