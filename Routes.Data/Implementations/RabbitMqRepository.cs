@@ -1,19 +1,17 @@
+using System;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using Routes.Domain.Interfaces.Repositories;
 
 namespace Routes.Data.Implementations;
 
-public class RabbitMqRepository : IRabbitMqRepository
+public class RabbitMqRepository(
+    IConnectionFactory _factory,
+    ILogger<RabbitMqRepository> _logger
+) : IRabbitMqRepository
 {
-    private readonly IConnectionFactory _factory;
-
-    public RabbitMqRepository(IConnectionFactory factory)
-    {
-        _factory = factory;
-    }
-
     public void Publish<T>(string queue, T data, bool shouldThrowException = true)
     {
         try
@@ -27,10 +25,11 @@ public class RabbitMqRepository : IRabbitMqRepository
 
             channel.BasicPublish("", queue, null, body);
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Erro ao publicar mensagem na fila {QueueName}", queue);
             if (shouldThrowException)
-                throw;
+                throw new Exception($"Erro ao publicar mensagem na fila {queue}", ex);
         }
     }
 }

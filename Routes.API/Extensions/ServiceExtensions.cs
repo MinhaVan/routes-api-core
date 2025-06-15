@@ -9,18 +9,14 @@ using FluentValidation;
 using System.Reflection;
 using Routes.Service.Configuration;
 using Routes.Application.Implementations;
-using StackExchange.Redis;
-using Routes.Domain.Interfaces.Repositories;
-using Routes.Data.Implementations;
 
 namespace Routes.API.Extensions;
 
 public static class ServiceExtensions
 {
-    public static IServiceCollection AddCustomServices(this IServiceCollection services, SecretManager secretManager)
+    public static IServiceCollection AddCustomServices(this IServiceCollection services)
     {
         services.AddHttpContextAccessor();
-        services.AddCache(secretManager);
 
         services.AddSingleton<ILocalizacaoCache, LocalizacaoCacheEmMemoria>();
         services.AddScoped<IEnderecoService, EnderecoService>();
@@ -42,27 +38,13 @@ public static class ServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddCache(this IServiceCollection services, SecretManager secretManager)
-    {
-        services.AddSingleton<IConnectionMultiplexer>(sp =>
-        {
-            var configuration = secretManager.Infra.Redis;
-            return ConnectionMultiplexer.Connect(configuration);
-        });
-
-        services.AddScoped<IRedisRepository, RedisRepository>();
-        Console.WriteLine("Configuração do Redis realizada com sucesso!");
-
-        return services;
-    }
-
     public static IServiceCollection AddCustomMapper(this IServiceCollection services)
     {
         services.AddAutoMapper(cfg => { }, AppDomain.CurrentDomain.GetAssemblies());
         return services;
     }
 
-    public static IServiceCollection AddControllersWithFilters(this IServiceCollection services)
+    public static IServiceCollection AddControllersWithFilters(this IServiceCollection services, SecretManager secretManager)
     {
         services.AddControllers(options =>
         {
@@ -72,7 +54,12 @@ public static class ServiceExtensions
             options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
         });
 
-        services.AddSignalR();
+        services.AddSignalR()
+            .AddStackExchangeRedis(secretManager.Infra.Redis, options =>
+            {
+                options.Configuration.ChannelPrefix = "Websockets";
+            });
+
         services.AddHttpClient();
 
         services.AddFluentValidationAutoValidation()

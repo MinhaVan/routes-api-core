@@ -35,10 +35,12 @@ builder.Services.AddCustomAuthentication(secretManager)
                 .AddCustomRateLimiting(secretManager)
                 .AddCustomResponseCompression()
                 .AddCustomCors()
-                .AddCustomServices(secretManager)
-                .AddCustomRepository(secretManager)
+                .AddCustomServices()
+                .AddCache(secretManager)
+                .AddCustomRepository()
+                .AddQueue(secretManager)
                 .AddCustomMapper()
-                .AddControllersWithFilters()
+                .AddControllersWithFilters(secretManager)
                 .AddCustomHttp(secretManager);
 
 // Configura o logger
