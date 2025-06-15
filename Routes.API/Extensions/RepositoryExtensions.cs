@@ -45,7 +45,8 @@ public static class RepositoryExtensions
             {
                 UserName = configuration[0],
                 Password = configuration[1],
-                HostName = configuration[2]
+                HostName = configuration[2],
+                Port = int.Parse(configuration[3])
             };
         });
 

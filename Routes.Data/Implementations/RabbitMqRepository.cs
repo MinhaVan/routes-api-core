@@ -27,7 +27,7 @@ public class RabbitMqRepository : IRabbitMqRepository
 
             channel.BasicPublish("", queue, null, body);
         }
-        catch (System.Exception)
+        catch (System.Exception ex)
         {
             if (shouldThrowException)
                 throw;
