@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Routes.Domain.Interfaces.APIs;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Repository;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
@@ -24,6 +24,8 @@ public class RotaHubTests
     private readonly Mock<IHubCallerClients> _clientsMock = new();
     private readonly Mock<IGroupManager> _groupsMock = new();
     private readonly Mock<HubCallerContext> _contextMock = new();
+    private readonly Mock<IRabbitMqRepository> _rabbitMqRepository = new();
+    private readonly Mock<IRedisRepository> _localizacaoCache = new();
 
     private RotaHub CreateHub()
     {
@@ -31,7 +33,8 @@ public class RotaHubTests
             _loggerMock.Object,
             _pessoasApiMock.Object,
             _rotaRepoMock.Object,
-            _localizacaoCacheMock.Object
+            _rabbitMqRepository.Object,
+            _localizacaoCache.Object
         )
         {
             Clients = _clientsMock.Object,

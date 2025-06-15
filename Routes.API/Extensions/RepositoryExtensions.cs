@@ -37,7 +37,7 @@ public static class RepositoryExtensions
 
     public static IServiceCollection AddQueue(this IServiceCollection services, SecretManager secretManager)
     {
-        var configuration = secretManager.Infra.RabbitMQ.Split(':');
+        var configuration = secretManager.Infra.RabbitMQ.Split(',');
 
         services.AddSingleton<IConnectionFactory>(sp =>
         {
