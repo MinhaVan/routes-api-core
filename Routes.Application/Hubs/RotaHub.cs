@@ -101,7 +101,7 @@ public class RotaHub(
         }
     }
 
-    public async Task RemoverResponsavelDaRota(int rotaId)
+    public async Task RemoverResponsavelDaRota(int rotaId, string accessToken)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, rotaId.ToString());
     }
