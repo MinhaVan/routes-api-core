@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,12 @@ public class RabbitMqRepository(
             using var connection = _factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.QueueDeclare(queue, durable: true, exclusive: false, autoDelete: false);
+            channel.QueueDeclare(queue, durable: true, exclusive: false, autoDelete: false, arguments: new Dictionary<string, object>
+            {
+                { "x-dead-letter-exchange", "" },
+                { "x-dead-letter-routing-key", $"{queue}.retry" }
+            });
+
             var message = JsonSerializer.Serialize(data);
             var body = Encoding.UTF8.GetBytes(message);
 
