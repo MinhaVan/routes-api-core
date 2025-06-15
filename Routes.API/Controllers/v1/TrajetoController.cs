@@ -25,7 +25,15 @@ public class TrajetoController(
     private readonly IMarcadorService _marcadorService = marcadorService;
     private readonly IOrdemTrajetoService _ordemTrajetoService = ordemTrajetoService;
 
-    [HttpPost("Rota/Gerar/{rotaId}")]
+    /// <summary>
+    /// Gera o melhor trajeto para a rota especificada.
+    /// Este método calcula o trajeto ideal com base nos marcadores associados à rota.
+    /// O trajeto é otimizado para minimizar a distância e o tempo de viagem, considerando as coordenadas geográficas dos marcadores.
+    /// O resultado é salvo no banco de dados e pode ser utilizado para planejamento de rotas.
+    /// </summary>
+    /// <param name="rotaId">Identificador da Rota</param>
+    /// <returns></returns>
+    [HttpPost("Rota/{rotaId}/Gerar")]
     public async Task<IActionResult> GerarMelhorTrajetoAsync(int rotaId)
     {
         await _trajetoService.GerarMelhorTrajetoAsync(rotaId);
