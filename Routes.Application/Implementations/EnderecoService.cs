@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Routes.Domain.Enums;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Repository;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
@@ -10,6 +13,7 @@ namespace Routes.Service.Implementations;
 
 public class EnderecoService(
     IMapper _mapper,
+    IRedisRepository _redisRepository,
     IBaseRepository<Endereco> _enderecoRepository,
     IGoogleDirectionsService _googleDirectionsService,
     IUserContext _userContext) : IEnderecoService
@@ -25,6 +29,10 @@ public class EnderecoService(
         model.Longitude = marcador.Longitude;
 
         await _enderecoRepository.AdicionarAsync(model);
+
+        await _redisRepository.DeleteAsync($"endereco:{model.Id}");
+        await _redisRepository.DeleteAsync($"enderecos:usuario:{model.UsuarioId}");
+        await _redisRepository.SetAsync($"endereco:{model.Id}", model, "enderecos");
     }
 
     public async Task AtualizarAsync(EnderecoAtualizarViewModel enderecoAtualizarViewModel)
@@ -55,22 +63,60 @@ public class EnderecoService(
         model.TipoEndereco = enderecoAtualizarViewModel.TipoEndereco.Value;
 
         await _enderecoRepository.AtualizarAsync(model);
+
+        await _redisRepository.DeleteAsync($"enderecos:usuario:{model.UsuarioId}");
+        await _redisRepository.DeleteAsync($"endereco:{model.Id}");
+        await _redisRepository.SetAsync($"endereco:{model.Id}", model, "enderecos");
     }
 
     public async Task DeletarAsync(int id)
     {
         await _enderecoRepository.DeletarAsync(id);
+        await _redisRepository.DeleteAsync($"endereco:{id}");
+        await _redisRepository.DeleteAsync($"enderecos:usuario:{_userContext.UserId}");
     }
 
     public async Task<EnderecoViewModel> Obter(int id)
-        => _mapper.Map<EnderecoViewModel>(await _enderecoRepository.ObterPorIdAsync(id));
+    {
+        var model = await _redisRepository.GetAsync<Endereco>($"endereco:{id}");
+        if (model is null)
+        {
+            model = await _enderecoRepository.ObterPorIdAsync(id);
+            await _redisRepository.SetAsync($"endereco:{model.Id}", model, "enderecos");
+        }
+
+        return _mapper.Map<EnderecoViewModel>(model);
+    }
 
     public async Task<List<EnderecoViewModel>> Obter(List<int> ids)
-        => _mapper.Map<List<EnderecoViewModel>>(await _enderecoRepository.BuscarAsync(x => ids.Contains(x.Id)));
+    {
+        var keys = ids.Select(id => $"endereco:{id}").ToList();
+        var cached = await _redisRepository.GetListAsync<Endereco>(keys);
+
+        var cachedIds = cached.Select(c => c.Id).ToHashSet();
+        var missingIds = ids.Except(cachedIds).ToList();
+
+        if (missingIds.Any())
+        {
+            var fromDb = await _enderecoRepository.BuscarAsync(x => missingIds.Contains(x.Id));
+            foreach (var item in fromDb)
+                await _redisRepository.SetAsync($"endereco:{item.Id}", item, "enderecos");
+
+            cached.AddRange(fromDb);
+        }
+
+        return _mapper.Map<List<EnderecoViewModel>>(cached);
+    }
 
     public async Task<List<EnderecoViewModel>> Obter()
     {
-        var enderecos = await _enderecoRepository.BuscarAsync(x => x.Status == Domain.Enums.StatusEntityEnum.Ativo && x.UsuarioId == _userContext.UserId);
+        var enderecos = await _redisRepository.GetAsync<IEnumerable<Endereco>>($"enderecos:usuario:{_userContext.UserId}");
+        if (enderecos is null || !enderecos.Any())
+        {
+            enderecos = await _enderecoRepository.BuscarAsync(x => x.Status == StatusEntityEnum.Ativo && x.UsuarioId == _userContext.UserId);
+            await _redisRepository.SetAsync($"enderecos:usuario:{_userContext.UserId}", enderecos, "enderecos");
+        }
+
         return _mapper.Map<List<EnderecoViewModel>>(enderecos);
     }
 }

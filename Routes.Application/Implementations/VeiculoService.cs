@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.APIs;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Repository;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
@@ -16,6 +17,7 @@ public class VeiculoService(
     IMapper _mapper,
     IUserContext _userContext,
     IPessoasAPI _pessoasAPI,
+    IRedisRepository _redisRepository,
     IBaseRepository<Veiculo> _veiculoRepository,
     IBaseRepository<MotoristaRota> _motoristaRotaRepository) : IVeiculoService
 {
@@ -29,6 +31,12 @@ public class VeiculoService(
             await Task.CompletedTask;
         });
         await _veiculoRepository.AdicionarAsync(veiculos);
+        foreach (var veiculo in veiculos)
+        {
+            await _redisRepository.DeleteAsync($"veiculo:{veiculo.Id}");
+            await _redisRepository.DeleteAsync($"veiculos:empresa:{_userContext.Empresa}");
+            await _redisRepository.SetAsync($"veiculo:{veiculo.Id}", veiculo, "veiculos");
+        }
     }
 
     public async Task AtualizarAsync(List<VeiculoAtualizarViewModel> veiculosViewModels)
@@ -40,25 +48,55 @@ public class VeiculoService(
             await Task.CompletedTask;
         });
         await _veiculoRepository.AtualizarAsync(veiculos);
+        foreach (var veiculo in veiculos)
+        {
+            await _redisRepository.DeleteAsync($"veiculo:{veiculo.Id}");
+            await _redisRepository.DeleteAsync($"veiculos:empresa:{_userContext.Empresa}");
+            await _redisRepository.SetAsync($"veiculo:{veiculo.Id}", veiculo, "veiculos");
+        }
     }
 
     public async Task DeletarAsync(int id)
     {
         var model = await _veiculoRepository.ObterPorIdAsync(id);
-        model.Status = Domain.Enums.StatusEntityEnum.Deletado;
+        model.Status = StatusEntityEnum.Deletado;
         await _veiculoRepository.AtualizarAsync(model);
+        await _redisRepository.DeleteAsync($"veiculo:{model.Id}");
+        await _redisRepository.DeleteAsync($"veiculos:empresa:{_userContext.Empresa}");
     }
 
     public async Task<List<VeiculoViewModel>> ObterAsync()
     {
-        var veiculos = await _veiculoRepository.BuscarAsync(x => x.EmpresaId == _userContext.Empresa);
-        return _mapper.Map<List<VeiculoViewModel>>(veiculos);
+        var veiculos = await _redisRepository.GetAsync<IEnumerable<Veiculo>>($"veiculos:empresa:{_userContext.Empresa}");
+        if (veiculos is null || veiculos.Count() == 0)
+        {
+            veiculos = await _veiculoRepository.BuscarAsync(x => x.EmpresaId == _userContext.Empresa);
+            await _redisRepository.SetAsync($"veiculos:empresa:{_userContext.Empresa}", veiculos, "veiculos");
+        }
+
+        var dtos = _mapper.Map<List<VeiculoViewModel>>(veiculos);
+        return dtos;
     }
 
     public async Task<VeiculoViewModel> ObterAsync(int veiculoId, int rotaId, bool completarDadosDoUsuario = false)
     {
-        var veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId && x.EmpresaId == _userContext.Empresa);
-        var motoristaRota = await _motoristaRotaRepository.BuscarUmAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo);
+        var veiculo = await _redisRepository.GetAsync<Veiculo>($"veiculo:{veiculoId}");
+        if (veiculo is null)
+        {
+            veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId && x.EmpresaId == _userContext.Empresa);
+            await _redisRepository.SetAsync($"veiculo:{veiculo.Id}", veiculo, "veiculos");
+        }
+
+        var motoristaRota = await _redisRepository.GetAsync<MotoristaRota>($"motorista_rota:{rotaId}:{veiculoId}");
+        if (motoristaRota is null)
+        {
+            motoristaRota = await _motoristaRotaRepository.BuscarUmAsync(x => x.RotaId == rotaId);
+            await _redisRepository.SetAsync($"motorista_rota:{rotaId}:{veiculoId}", motoristaRota, "motoristas_rotas");
+        }
+
+        if (motoristaRota.Status != StatusEntityEnum.Ativo)
+            return default;
+
         var motoristaResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(motoristaRota.MotoristaId, completarDadosDoUsuario);
         if (motoristaResponse == null || !motoristaResponse.Sucesso || motoristaResponse.Data == null)
         {
