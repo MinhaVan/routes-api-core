@@ -32,6 +32,7 @@ public static class ServiceExtensions
         services.AddScoped<IOrdemTrajetoService, OrdemTrajetoService>();
         services.AddScoped<IRelatorioTrajetoService, RelatorioTrajetoService>();
         services.AddScoped<IRotaOnlineService, RotaOnlineService>();
+        services.AddScoped<ILocalizacaoTrajetoService, LocalizacaoTrajetoService>();
 
         Console.WriteLine("Configuração das services realizada com sucesso!");
 

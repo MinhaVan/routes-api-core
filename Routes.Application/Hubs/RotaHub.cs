@@ -71,7 +71,6 @@ public class RotaHub(
         try
         {
             var autorizado = await ValidarResponsavel(rotaId, accessToken);
-
             if (!autorizado)
             {
                 await EnviarRespostaErro("Você ainda não pode receber os dados da localização!");

@@ -2,6 +2,7 @@ namespace Routes.Domain.ViewModels.WebSocket;
 
 public class EnviarLocalizacaoWebSocketResponse
 {
+    public EnviarLocalizacaoWebSocketResponse() { }
     public EnviarLocalizacaoWebSocketResponse(double latitude, double longitude, int rotaId, double destinoLatitude, double destinoLongitude)
     {
         Latitude = latitude;
