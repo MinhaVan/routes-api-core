@@ -45,11 +45,16 @@ public class RotaHub(
             Sucesso = true
         };
 
-        _rabbitMqRepository.Publish(RabbitMqQueues.EnviarLocalizacao, response.Data, shouldThrowException: false);
+        var mensagem = new BaseQueue<EnviarLocalizacaoWebSocketResponse>
+        {
+            Mensagem = response.Data,
+            Retry = 0
+        };
+        _rabbitMqRepository.Publish(RabbitMqQueues.EnviarLocalizacao, mensagem, shouldThrowException: false);
 
         var tasks = new[]
         {
-            _localizacaoCache.SetAsync(ObterRedisKey(data.RotaId), response),
+            _localizacaoCache.SetAsync(ObterRedisKey(data.RotaId), response.Data),
             Clients.Group(data.RotaId.ToString()).SendAsync("ReceberLocalizacao", response)
         };
 
