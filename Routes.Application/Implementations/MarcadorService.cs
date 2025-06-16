@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.APIs;
-using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;

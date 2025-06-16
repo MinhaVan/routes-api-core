@@ -8,7 +8,7 @@ using Moq;
 using Routes.Application.Implementations;
 using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.APIs;
-using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Xunit;

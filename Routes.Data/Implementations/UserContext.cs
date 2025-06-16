@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Repositories;
 using Microsoft.AspNetCore.Http;
 using Routes.Data.Utils;
 

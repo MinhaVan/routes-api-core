@@ -1,5 +1,5 @@
 using Routes.Data.Context;
-using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using System;

@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Routes.Domain.Models;
 
-namespace Routes.Domain.Interfaces.Repository;
+namespace Routes.Domain.Interfaces.Repositories;
 
 public interface IBaseRepository<T> where T : Entity
 {

@@ -1,10 +1,8 @@
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.APIs;
-using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
@@ -14,8 +12,7 @@ namespace Routes.Service.Implementations;
 
 public class MotoristaRotaService(
     IPessoasAPI _pessoasAPI,
-    IBaseRepository<MotoristaRota> _motoristaRotaRepository,
-    IUserContext _userContext) : IMotoristaRotaService
+    IMotoristaRotaRepository _motoristaRotaRepository) : IMotoristaRotaService
 {
 
     public async Task VincularAsync(MotoristaVincularViewModel request)
@@ -24,7 +21,7 @@ public class MotoristaRotaService(
             x.MotoristaId == request.MotoristaId &&
             x.RotaId == request.RotaId);
 
-        if (configuracao is not null && configuracao.Id > 0 && configuracao.Status == StatusEntityEnum.Ativo)
+        if (configuracao is not null && configuracao.Status == StatusEntityEnum.Ativo)
         {
             throw new BusinessRuleException("Motorista já está configurado para essa rota");
         }
@@ -32,8 +29,7 @@ public class MotoristaRotaService(
         // Se configuracao existir e estiver desativada
         if (configuracao is not null && configuracao.Status == StatusEntityEnum.Deletado)
         {
-            configuracao.Status = StatusEntityEnum.Ativo;
-            await _motoristaRotaRepository.AtualizarAsync(configuracao);
+            await _motoristaRotaRepository.AtualizarStatusAsync(configuracao.MotoristaId, configuracao.RotaId, StatusEntityEnum.Ativo);
         }
         else
         {
@@ -58,7 +54,7 @@ public class MotoristaRotaService(
         }
 
         configuracao.Status = StatusEntityEnum.Deletado;
-        await _motoristaRotaRepository.AtualizarAsync(configuracao);
+        await _motoristaRotaRepository.AtualizarStatusAsync(configuracao.MotoristaId, configuracao.RotaId, StatusEntityEnum.Deletado);
     }
 
     public async Task<MotoristaViewModel> BuscarMotoristaPorRotaAsync(int rotaId)

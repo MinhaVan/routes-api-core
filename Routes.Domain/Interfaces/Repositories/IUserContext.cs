@@ -1,4 +1,4 @@
-namespace Routes.Domain.Interfaces.Repository;
+namespace Routes.Domain.Interfaces.Repositories;
 
 public interface IUserContext
 {

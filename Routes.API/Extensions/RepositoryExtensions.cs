@@ -2,7 +2,7 @@ using System;
 using Routes.Data.Implementations;
 using Routes.Data.Repositories;
 using Routes.Domain.Interfaces.Repositories;
-using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Models;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,6 +19,7 @@ public static class RepositoryExtensions
         services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
         services.AddScoped<IBaseRepository<Rota>, BaseRepository<Rota>>();
         services.AddScoped<IAlunoRotaRepository, AlunoRotaRepository>();
+        services.AddScoped<IMotoristaRotaRepository, MotoristaRotaRepository>();
         services.AddScoped<IBaseRepository<MotoristaRota>, BaseRepository<MotoristaRota>>();
         services.AddScoped<IBaseRepository<Endereco>, BaseRepository<Endereco>>();
         services.AddScoped<IBaseRepository<RotaHistorico>, BaseRepository<RotaHistorico>>();

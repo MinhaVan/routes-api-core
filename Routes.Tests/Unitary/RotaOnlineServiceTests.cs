@@ -6,7 +6,7 @@ using Bogus;
 using Moq;
 using Routes.Application.Implementations;
 using Routes.Domain.Interfaces.APIs;
-using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Routes.Service.Exceptions;

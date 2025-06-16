@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Routes.Data.Utils;
 using Routes.Domain.Interfaces.APIs;
-using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.ViewModels;
 
 namespace Routes.Data.APIs;

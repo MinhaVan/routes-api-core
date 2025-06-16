@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Routes.Application.Implementations;
 using Routes.Domain.Enums;
-using Routes.Domain.Interfaces.Repository;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Models;
 using Routes.Service.Exceptions;
 using Xunit;
