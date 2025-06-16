@@ -8,8 +8,11 @@ public class AjusteAlunoRotaConfiguration : IEntityTypeConfiguration<AjusteAluno
 {
     public void Configure(EntityTypeBuilder<AjusteAlunoRota> modelBuilder)
     {
-        modelBuilder.ConfigureBaseEntity();
+        // modelBuilder.ConfigureBaseEntity();
         modelBuilder.ToTable("ajusteAlunoRota");
+
+        modelBuilder.HasKey(x => new { x.AlunoId, x.RotaId });
+        modelBuilder.Ignore(x => x.Id);
 
         modelBuilder.HasOne(x => x.EnderecoPartida)
             .WithMany(y => y.AjusteAlunoRotasPartida)

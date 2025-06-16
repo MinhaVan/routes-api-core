@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Routes.Data.Context;
@@ -11,9 +12,11 @@ using Routes.Data.Context;
 namespace Routes.API.Migrations
 {
     [DbContext(typeof(APIContext))]
-    partial class APIContextModelSnapshot : ModelSnapshot
+    [Migration("20250616025101_AjusteAlunoRotaConfig")]
+    partial class AjusteAlunoRotaConfig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

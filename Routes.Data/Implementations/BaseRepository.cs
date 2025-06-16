@@ -105,6 +105,7 @@ public class BaseRepository<T> : IBaseRepository<T> where T : Entity
     {
         var result = await _dbSet.FirstOrDefaultAsync(t => t.Id.Equals(entity.Id));
         _dbSet.Entry(result).CurrentValues.SetValues(entity);
+        // _context.Entry(result).CurrentValues.SetValues(entity);
         await _context.SaveChangesAsync();
     }
 

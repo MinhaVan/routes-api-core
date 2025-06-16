@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.APIs;
+using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Repository;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
@@ -14,7 +15,7 @@ namespace Routes.Service.Implementations;
 
 public class AlunoRotaService(
     IPessoasAPI _pessoasAPI,
-    IBaseRepository<AlunoRota> _alunoRotaRepository,
+    IAlunoRotaRepository _alunoRotaRepository,
     IBaseRepository<Rota> _rotaRepository,
     IMapper _mapper) : IAlunoRotaService
 {
@@ -59,7 +60,7 @@ public class AlunoRotaService(
         else
         {
             alunoRota.Status = StatusEntityEnum.Ativo;
-            await _alunoRotaRepository.AtualizarAsync(alunoRota);
+            await _alunoRotaRepository.AtualizarStatusAsync(alunoRota);
         }
     }
 
@@ -74,7 +75,7 @@ public class AlunoRotaService(
         _ = alunoRota ?? throw new BusinessRuleException("Aluno não estava vinculado a essa rota!");
 
         alunoRota.Status = StatusEntityEnum.Deletado;
-        await _alunoRotaRepository.AtualizarAsync(alunoRota);
+        await _alunoRotaRepository.AtualizarStatusAsync(alunoRota);
     }
 
     public async Task<List<AlunoRotaViewModel>> ObterRotasPorAlunoAsync(int rotaId, int? alunoId = null)
