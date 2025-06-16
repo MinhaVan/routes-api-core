@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.APIs;
@@ -72,5 +75,31 @@ public class MotoristaRotaService(
 
         configuracao.Status = StatusEntityEnum.Deletado;
         await _motoristaRotaRepository.AtualizarAsync(configuracao);
+    }
+
+    public async Task<List<MotoristaViewModel>> BuscarMotoristasPorRotaAsync(int rotaId)
+    {
+        var motoristas = await _motoristaRotaRepository.BuscarAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo);
+
+        if (motoristas is null || motoristas.Count() == 0)
+        {
+            return new List<MotoristaViewModel>();
+        }
+
+        var motoristaIds = motoristas.Select(x => x.MotoristaId);
+        var MotoristasCB = new ConcurrentBag<MotoristaViewModel>();
+        await Task.WhenAll(
+            motoristaIds.Select(async motoristaId =>
+            {
+                var motoristaResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(motoristaId);
+                if (motoristaResponse is null || motoristaResponse.Data is null)
+                {
+                    throw new BusinessRuleException(motoristaResponse.Mensagem);
+                }
+                MotoristasCB.Add(motoristaResponse.Data);
+            })
+        );
+
+        return MotoristasCB.ToList();
     }
 }

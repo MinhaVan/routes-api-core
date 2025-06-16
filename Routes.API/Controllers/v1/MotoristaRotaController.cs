@@ -3,6 +3,7 @@ using Routes.Domain.Interfaces.Services;
 using Routes.Domain.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace Routes.API.Controllers.v1;
 
@@ -15,6 +16,13 @@ public class MotoristaRotaController : BaseController
     public MotoristaRotaController(IMotoristaRotaService motoristaRotaService)
     {
         _motoristaRotaService = motoristaRotaService;
+    }
+
+    [HttpGet("All/Motorista/Rota/{rotaId}")]
+    public async Task<IActionResult> BuscarMotoristasPorRotaAsync([FromRoute] int rotaId)
+    {
+        List<MotoristaViewModel> motoristas = await _motoristaRotaService.BuscarMotoristasPorRotaAsync(rotaId);
+        return Success(motoristas);
     }
 
     [HttpPut("Vincular")]
