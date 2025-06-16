@@ -20,16 +20,8 @@ public class MotoristaRotaService(
 
     public async Task VincularAsync(MotoristaVincularViewModel request)
     {
-        // TODO: Caso o usuario que está fzendo a acao nao for o motorista, vai ficar errado o vinculo da rota x usuario
-        var motoristaResponse = await _pessoasAPI.ObterMotoristaPorUsuarioIdAsync(_userContext.UserId);
-        if (motoristaResponse is null || motoristaResponse.Data is null)
-        {
-            throw new BusinessRuleException(motoristaResponse.Mensagem);
-        }
-
-        var motorista = motoristaResponse.Data;
         var configuracao = await _motoristaRotaRepository.BuscarUmAsync(x =>
-            x.MotoristaId == motorista.Id &&
+            x.MotoristaId == request.MotoristaId &&
             x.RotaId == request.RotaId);
 
         if (configuracao is not null && configuracao.Id > 0 && configuracao.Status == StatusEntityEnum.Ativo)
@@ -38,7 +30,7 @@ public class MotoristaRotaService(
         }
 
         // Se configuracao existir e estiver desativada
-        if (configuracao is not null && configuracao.Status == StatusEntityEnum.Ativo)
+        if (configuracao is not null && configuracao.Status == StatusEntityEnum.Deletado)
         {
             configuracao.Status = StatusEntityEnum.Ativo;
             await _motoristaRotaRepository.AtualizarAsync(configuracao);
@@ -47,7 +39,7 @@ public class MotoristaRotaService(
         {
             var model = new MotoristaRota
             {
-                MotoristaId = motorista.Id,
+                MotoristaId = request.MotoristaId.Value,
                 RotaId = request.RotaId
             };
 
@@ -57,18 +49,10 @@ public class MotoristaRotaService(
 
     public async Task DesvincularAsync(MotoristaVincularViewModel request)
     {
-        // TODO: Caso o usuario que está fzendo a acao nao for o motorista, vai ficar errado o vinculo da rota x usuario
-        var motoristaResponse = await _pessoasAPI.ObterMotoristaPorUsuarioIdAsync(_userContext.UserId);
-        if (motoristaResponse is null || motoristaResponse.Data is null)
-        {
-            throw new BusinessRuleException(motoristaResponse.Mensagem);
-        }
-
-        var motorista = motoristaResponse.Data;
         var configuracao = await _motoristaRotaRepository
-            .BuscarUmAsync(x => x.MotoristaId == motorista.Id && x.RotaId == request.RotaId);
+            .BuscarUmAsync(x => x.MotoristaId == request.MotoristaId && x.RotaId == request.RotaId);
 
-        if (configuracao is null || configuracao.Id <= 0)
+        if (configuracao is null)
         {
             throw new BusinessRuleException("Motorista não está configurado para essa rota");
         }
