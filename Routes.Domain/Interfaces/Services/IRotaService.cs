@@ -6,7 +6,6 @@ namespace Routes.Domain.Interfaces.Services;
 
 public interface IRotaService
 {
-    Task<List<RotaViewModel>> ObterTodosAsync();
     Task<RotaViewModel> AdicionarAsync(RotaAdicionarViewModel rotaAdicionarViewModel);
     Task AtualizarAsync(RotaAtualizarViewModel rotaAtualizarViewModel);
     Task DeletarAsync(int id);

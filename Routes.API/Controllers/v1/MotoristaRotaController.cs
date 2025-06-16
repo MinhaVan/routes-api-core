@@ -18,11 +18,11 @@ public class MotoristaRotaController : BaseController
         _motoristaRotaService = motoristaRotaService;
     }
 
-    [HttpGet("All/Motorista/Rota/{rotaId}")]
-    public async Task<IActionResult> BuscarMotoristasPorRotaAsync([FromRoute] int rotaId)
+    [HttpGet("Motorista/Rota/{rotaId}")]
+    public async Task<IActionResult> BuscarMotoristaPorRotaAsync([FromRoute] int rotaId)
     {
-        List<MotoristaViewModel> motoristas = await _motoristaRotaService.BuscarMotoristasPorRotaAsync(rotaId);
-        return Success(motoristas);
+        MotoristaViewModel motorista = await _motoristaRotaService.BuscarMotoristaPorRotaAsync(rotaId);
+        return Success(motorista);
     }
 
     [HttpPut("Vincular")]

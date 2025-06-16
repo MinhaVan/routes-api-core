@@ -93,12 +93,6 @@ public class RotaService(
         return response;
     }
 
-    public async Task<List<RotaViewModel>> ObterTodosAsync()
-    {
-        var rotas = await _rotaRepository.BuscarAsync(x => x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo);
-        return _mapper.Map<List<RotaViewModel>>(rotas);
-    }
-
     public async Task<List<RotaViewModel>> ObterAsync()
     {
         var Alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
@@ -112,8 +106,8 @@ public class RotaService(
             x => x.Historicos.OrderByDescending(x => x.DataCriacao)
         );
 
-        if (!response.Any(x => x.Historicos.Any()))
-            return default!;
+        // if (!response.Any(x => x.Historicos.Any()))
+        //     return default!;
 
         return _mapper.Map<List<RotaViewModel>>(response);
     }
