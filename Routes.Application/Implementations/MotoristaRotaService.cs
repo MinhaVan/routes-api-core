@@ -87,7 +87,7 @@ public class MotoristaRotaService(
 
         var motoristaId = motoristas.First().MotoristaId;
 
-        var motoristaResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(motoristaId);
+        var motoristaResponse = await _pessoasAPI.ObterMotoristaPorIdAsync(motoristaId, completarDadosDoUsuario: true);
         if (motoristaResponse is null || motoristaResponse.Data is null)
         {
             throw new BusinessRuleException(motoristaResponse.Mensagem);
