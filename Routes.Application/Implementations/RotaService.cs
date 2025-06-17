@@ -33,7 +33,9 @@ public class RotaService(
         model.TipoRota = rotaAdicionarViewModel.TipoRota;
 
         await _rotaRepository.AdicionarAsync(model);
-        return _mapper.Map<RotaViewModel>(model); ;
+        await LimparCache();
+
+        return _mapper.Map<RotaViewModel>(model);
     }
 
     public async Task AtualizarAsync(RotaAtualizarViewModel rotaAtualizarViewModel)
@@ -45,6 +47,7 @@ public class RotaService(
         model.DiaSemana = rotaAtualizarViewModel.DiaSemana;
         model.Horario = rotaAtualizarViewModel.Horario;
         model.TipoRota = rotaAtualizarViewModel.TipoRota;
+        await LimparCache();
 
         await _rotaRepository.AtualizarAsync(model);
     }
@@ -56,6 +59,7 @@ public class RotaService(
         model.Status = StatusEntityEnum.Deletado;
         model.AlunoRotas.ToList().ForEach(item => item.Status = StatusEntityEnum.Deletado);
         model.MotoristaRotas.ToList().ForEach(item => item.Status = StatusEntityEnum.Deletado);
+        await LimparCache();
 
         await _rotaRepository.AtualizarAsync(model);
     }
@@ -200,5 +204,11 @@ public class RotaService(
         var rotasViewModel = _mapper.Map<List<RotaViewModel>>(rotasDoDiaParaMotorista);
 
         return rotasViewModel;
+    }
+
+    private async Task LimparCache()
+    {
+        await _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, false));
+        await _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, true));
     }
 }
