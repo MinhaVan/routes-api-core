@@ -96,7 +96,8 @@ public class RotaService(
 
     public async Task<List<RotaViewModel>> ObterTodosAsync(bool incluirDeletados = false)
     {
-        var rotas = await _redisRepository.GetAsync<IEnumerable<Rota>>(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, incluirDeletados));
+        var chave = string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, incluirDeletados);
+        var rotas = await _redisRepository.GetAsync<IEnumerable<Rota>>(chave);
 
         if (rotas is null || !rotas.Any())
         {
@@ -105,7 +106,7 @@ public class RotaService(
                     (x.Status == StatusEntityEnum.Ativo || (incluirDeletados && x.Status == StatusEntityEnum.Deletado)));
 
             if (rotas is not null && rotas.Any())
-                await _redisRepository.SetAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa), rotas);
+                await _redisRepository.SetAsync(chave, rotas);
         }
 
         return _mapper.Map<List<RotaViewModel>>(rotas);
