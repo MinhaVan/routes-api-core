@@ -48,9 +48,9 @@ public class RotaController : BaseController
     }
 
     [HttpGet]
-    public async Task<IActionResult> ObterTodosAsync()
+    public async Task<IActionResult> ObterTodosAsync([FromQuery] bool incluirDeletados = false)
     {
-        var rotas = await _rotaService.ObterTodosAsync();
+        var rotas = await _rotaService.ObterTodosAsync(incluirDeletados);
         return Success(rotas);
     }
 

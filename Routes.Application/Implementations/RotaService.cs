@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.Repositories;
-using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Routes.Domain.Interfaces.APIs;
+using Routes.Domain.Utils;
 
 namespace Routes.Service.Implementations;
 
@@ -18,6 +18,7 @@ public class RotaService(
     IMapper _mapper,
     IUserContext _userContext,
     IPessoasAPI _pessoasAPI,
+    IRedisRepository _redisRepository,
     IRotaHistoricoRepository _rotaHistoricoRepository,
     IBaseRepository<MotoristaRota> _motoristaRotaRepository,
     IBaseRepository<AlunoRota> _alunoRotaRepository,
@@ -93,9 +94,20 @@ public class RotaService(
         return response;
     }
 
-    public async Task<List<RotaViewModel>> ObterTodosAsync()
+    public async Task<List<RotaViewModel>> ObterTodosAsync(bool incluirDeletados = false)
     {
-        var rotas = await _rotaRepository.BuscarAsync(x => x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo);
+        var rotas = await _redisRepository.GetAsync<IEnumerable<Rota>>(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, incluirDeletados));
+
+        if (rotas is null || !rotas.Any())
+        {
+            rotas = await _rotaRepository.BuscarAsync(x =>
+                    x.EmpresaId == _userContext.Empresa &&
+                    (x.Status == StatusEntityEnum.Ativo || (incluirDeletados && x.Status == StatusEntityEnum.Deletado)));
+
+            if (rotas is not null && rotas.Any())
+                await _redisRepository.SetAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa), rotas);
+        }
+
         return _mapper.Map<List<RotaViewModel>>(rotas);
     }
 
