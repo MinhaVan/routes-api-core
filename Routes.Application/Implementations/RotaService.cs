@@ -208,7 +208,12 @@ public class RotaService(
 
     private async Task LimparCache()
     {
-        await _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, false));
-        await _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, true));
+        var tasks = new[]
+        {
+            _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, false)),
+            _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, true))
+        };
+
+        await Task.WhenAll(tasks);
     }
 }
