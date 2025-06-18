@@ -24,7 +24,7 @@ public class ConexaoRotaController(
         if (data is null)
             return ObterRespostaErro("Dados da localização inválido!");
 
-        var localizacaoNoCache = await _redisRepository.GetAsync<EnviarLocalizacaoWebSocketResponse>(ObterRedisKey(data.RotaId));
+        var localizacaoNoCache = await _redisRepository.GetAsync<EnviarLocalizacaoWebSocketResponse>(KeyRedis.EnviarLocalizacao(data.RotaId));
         if (localizacaoNoCache.TipoMensagem == "finalizarCorrida")
             return Success();
 
@@ -51,7 +51,7 @@ public class ConexaoRotaController(
 
         _rabbitMqRepository.Publish(RabbitMqQueues.EnviarLocalizacao, mensagem, shouldThrowException: false);
 
-        await _redisRepository.SetAsync(ObterRedisKey(data.RotaId), response.Data);
+        await _redisRepository.SetAsync(KeyRedis.EnviarLocalizacao(data.RotaId), response.Data);
         return Success();
     }
 
@@ -63,7 +63,7 @@ public class ConexaoRotaController(
 
         try
         {
-            var localizacaoCache = await _redisRepository.GetAsync<EnviarLocalizacaoWebSocketResponse>(ObterRedisKey(rotaId));
+            var localizacaoCache = await _redisRepository.GetAsync<EnviarLocalizacaoWebSocketResponse>(KeyRedis.EnviarLocalizacao(rotaId));
             var mensagem = localizacaoCache is null ? "Nenhuma localização disponível no momento." : "Localização recebida com sucesso!";
 
             return Success(localizacaoCache, mensagem);
@@ -74,9 +74,6 @@ public class ConexaoRotaController(
             return ObterRespostaErro("Ocorreu um erro ao tentar receber os dados da localização!");
         }
     }
-
-    private string ObterRedisKey(int rotaId)
-        => string.Format(KeyRedis.EnviarLocalizacao, rotaId);
 
     private IActionResult ObterRespostaErro(string mensagem)
     {

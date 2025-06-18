@@ -9,9 +9,9 @@ using Routes.Service.Exceptions;
 namespace Routes.Application.Implementations;
 
 public class GestaoTrajetoService(
+    ILogger<GestaoTrajetoService> _logger,
     IBaseRepository<Rota> _rotaRepository,
-    IBaseRepository<RotaHistorico> _rotaHistoricoRepository,
-    ILogger<GestaoTrajetoService> _logger
+    IBaseRepository<RotaHistorico> _rotaHistoricoRepository
 ) : IGestaoTrajetoService
 {
     public async Task FinalizarTrajetoAsync(int rotaId)
