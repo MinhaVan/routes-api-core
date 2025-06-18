@@ -76,7 +76,7 @@ public class RotaController : BaseController
     }
 
     [HttpGet("{id}/detalhe")]
-    public async Task<IActionResult> ObterDetalheAsync(int id)
+    public async Task<IActionResult> ObterDetalheAsync([FromRoute] int id)
     {
         var rota = await _rotaService.ObterDetalheAsync(id);
         return Success(rota);

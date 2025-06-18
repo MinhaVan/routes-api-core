@@ -82,7 +82,7 @@ public class RotaService(
             x => x.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo),
             x => x.Historicos.OrderByDescending(x => x.DataCriacao));
 
-        var alunosRotas = await _alunoRotaRepository.BuscarAsync(x => x.RotaId == rota.Id);
+        var alunosRotas = await _alunoRotaRepository.BuscarAsync(x => x.RotaId == rota.Id && x.Status == StatusEntityEnum.Ativo);
         if (alunosRotas is null || !alunosRotas.Any())
             return default!;
 
