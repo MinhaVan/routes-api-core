@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Routes.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
+using Routes.Data.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 var environment = builder.Environment.EnvironmentName;
@@ -25,7 +26,7 @@ builder.Configuration
 
 // Adiciona as configurações do Secrets Manager
 var secretManager = builder.Services.AddSecretManager(builder.Configuration);
-Console.WriteLine($"Secret: '{JsonConvert.SerializeObject(secretManager)}'");
+Console.WriteLine($"Secret: '{secretManager.ToJson()}'");
 
 // Configura os serviços
 builder.Services.AddCustomAuthentication(secretManager)

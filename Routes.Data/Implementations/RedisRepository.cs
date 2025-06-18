@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Routes.Data.Utils;
 using Routes.Domain.Interfaces.Repositories;
 using StackExchange.Redis;
 
@@ -26,7 +27,7 @@ public class RedisRepository : IRedisRepository
         await DeleteAsync(key);
 
         var expiry = TimeSpan.FromMinutes(durationInMinutes);
-        string json = JsonConvert.SerializeObject(value);
+        string json = value.ToJson();
 
         await _db.StringSetAsync(key, json, expiry);
 

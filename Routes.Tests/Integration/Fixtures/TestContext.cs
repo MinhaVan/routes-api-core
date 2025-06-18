@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Routes.API;
 using Routes.Domain.ViewModels;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Routes.Data.Utils;
 
 namespace Routes.Tests.Integration.Fixtures
 {
@@ -33,7 +34,7 @@ namespace Routes.Tests.Integration.Fixtures
         {
             await Task.Run(() =>
             {
-                var json = JsonConvert.SerializeObject(GetUserAdmin);
+                var json = GetUserAdmin.ToJson();
                 var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
                 var response = _client.PostAsync("/api/User/Login", stringContent).Result;
                 var result = response.Content.ReadAsStringAsync().Result;

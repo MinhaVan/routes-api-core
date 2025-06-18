@@ -13,6 +13,7 @@ using Routes.Service.Exceptions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Routes.Domain.Interfaces.APIs;
+using Routes.Data.Utils;
 
 namespace Routes.Service.Implementations;
 
@@ -88,7 +89,7 @@ public class AjusteEnderecoService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[AdicionarAjusteEnderecoAsync] Ocorreu um erro ao tentar adicionar um ajuste na rota. Data: {0}", JsonConvert.SerializeObject(alterarEnderecoViewModel, Formatting.None));
+            _logger.LogError(ex, "[AdicionarAjusteEnderecoAsync] Ocorreu um erro ao tentar adicionar um ajuste na rota. Data: {0}", alterarEnderecoViewModel.ToJson());
             throw;
         }
     }
@@ -114,7 +115,7 @@ public class AjusteEnderecoService(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[AlterarEnderecoAsync] Ocorreu um erro ao tentar atualizar um ajuste na rota. Data: {0}", JsonConvert.SerializeObject(alterarAjusteEnderecoViewModel, Formatting.None));
+            _logger.LogError(ex, "[AlterarEnderecoAsync] Ocorreu um erro ao tentar atualizar um ajuste na rota. Data: {0}", alterarAjusteEnderecoViewModel.ToJson());
             throw;
         }
     }
