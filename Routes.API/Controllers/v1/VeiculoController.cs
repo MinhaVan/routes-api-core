@@ -48,9 +48,9 @@ public class VeiculoController : BaseController
     }
 
     [HttpGet]
-    public async Task<IActionResult> ObterAsync()
+    public async Task<IActionResult> ObterAsync([FromQuery] bool incluirDeletados = false)
     {
-        var veiculo = await _veiculoService.ObterAsync();
+        var veiculo = await _veiculoService.ObterAsync(incluirDeletados);
         return Success(veiculo);
     }
 

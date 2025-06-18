@@ -7,6 +7,7 @@ using Routes.Domain.Interfaces.APIs;
 using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
+using Routes.Domain.Utils;
 using Routes.Domain.ViewModels;
 using Routes.Service.Exceptions;
 
@@ -49,10 +50,16 @@ public class VeiculoService(
         await _veiculoRepository.AtualizarAsync(veiculos);
         foreach (var veiculo in veiculos)
         {
-            await _redisRepository.DeleteAsync($"veiculo:{veiculo.Id}");
-            await _redisRepository.DeleteAsync($"veiculos:empresa:{_userContext.Empresa}");
-            await _redisRepository.SetAsync($"veiculo:{veiculo.Id}", veiculo, "veiculos");
+            await Task.WhenAll(
+                _redisRepository.DeleteAsync(KeyRedis.Veiculos.Veiculo(veiculo.Id)),
+                _redisRepository.SetAsync($"veiculo:{veiculo.Id}", veiculo, "veiculos")
+            );
         }
+
+        await Task.WhenAll(
+            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, false)),
+            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, true))
+        );
     }
 
     public async Task DeletarAsync(int id)
@@ -60,17 +67,34 @@ public class VeiculoService(
         var model = await _veiculoRepository.ObterPorIdAsync(id);
         model.Status = StatusEntityEnum.Deletado;
         await _veiculoRepository.AtualizarAsync(model);
-        await _redisRepository.DeleteAsync($"veiculo:{model.Id}");
-        await _redisRepository.DeleteAsync($"veiculos:empresa:{_userContext.Empresa}");
+
+        await Task.WhenAll(
+            _redisRepository.DeleteAsync(KeyRedis.Veiculos.Veiculo(model.Id)),
+            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, false)),
+            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, true))
+        );
     }
 
-    public async Task<List<VeiculoViewModel>> ObterAsync()
+    public async Task<List<VeiculoViewModel>> ObterAsync(bool incluirDeletados = false)
     {
-        var veiculos = await _redisRepository.GetAsync<IEnumerable<Veiculo>>($"veiculos:empresa:{_userContext.Empresa}");
-        if (veiculos is null || veiculos.Count() == 0)
+        var status = new List<StatusEntityEnum>
         {
-            veiculos = await _veiculoRepository.BuscarAsync(x => x.EmpresaId == _userContext.Empresa);
-            await _redisRepository.SetAsync($"veiculos:empresa:{_userContext.Empresa}", veiculos, "veiculos");
+            StatusEntityEnum.Ativo
+        };
+
+        if (incluirDeletados)
+            status.Add(StatusEntityEnum.Deletado);
+
+        var chave = KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, incluirDeletados);
+        var veiculos = await _redisRepository.GetAsync<IEnumerable<Veiculo>>(chave);
+
+        if (veiculos is null || !veiculos.Any())
+        {
+            veiculos = await _veiculoRepository.BuscarAsync(x =>
+                x.EmpresaId == _userContext.Empresa && status.Contains(x.Status)
+            );
+
+            await _redisRepository.SetAsync(chave, veiculos, "veiculos");
         }
 
         var dtos = _mapper.Map<List<VeiculoViewModel>>(veiculos);
@@ -113,7 +137,7 @@ public class VeiculoService(
         if (veiculo is null)
         {
             veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId && x.EmpresaId == _userContext.Empresa);
-            await _redisRepository.SetAsync($"veiculo:{veiculo.Id}", veiculo, "veiculos");
+            await _redisRepository.SetAsync(KeyRedis.Veiculos.Veiculo(veiculo.Id), veiculo, "veiculos");
         }
 
         return veiculo;
