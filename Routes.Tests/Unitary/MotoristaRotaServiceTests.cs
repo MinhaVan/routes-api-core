@@ -15,18 +15,14 @@ namespace Routes.Tests.Unitary;
 
 public class MotoristaRotaServiceTests
 {
-    private readonly Mock<IMapper> _mapperMock = new();
-    private readonly Mock<IAuthApi> _authApiMock = new();
     private readonly Mock<IPessoasAPI> _pessoasApiMock = new();
-    private readonly Mock<IBaseRepository<MotoristaRota>> _motoristaRotaRepoMock = new();
+    private readonly Mock<IMotoristaRotaRepository> _motoristaRotaRepoMock = new();
     private readonly Mock<IUserContext> _userContextMock = new();
-
     private MotoristaRotaService CreateService()
     {
         return new MotoristaRotaService(
             _pessoasApiMock.Object,
-            _motoristaRotaRepoMock.Object,
-            _userContextMock.Object
+            _motoristaRotaRepoMock.Object
         );
     }
 

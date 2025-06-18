@@ -23,6 +23,7 @@ public class RotaServiceTests
     private readonly Mock<IPessoasAPI> _pessoasApiMock = new();
     private readonly Mock<IRotaHistoricoRepository> _rotaHistoricoRepoMock = new();
     private readonly Mock<IBaseRepository<MotoristaRota>> _motoristaRotaRepoMock = new();
+    private readonly Mock<IRedisRepository> _redisRepository = new();
 
     private RotaService CreateService()
     {
@@ -30,6 +31,7 @@ public class RotaServiceTests
             _mapperMock.Object,
             _userContextMock.Object,
             _pessoasApiMock.Object,
+            _redisRepository.Object,
             _rotaHistoricoRepoMock.Object,
             _motoristaRotaRepoMock.Object,
             _alunoRotaRepoMock.Object,

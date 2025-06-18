@@ -20,7 +20,7 @@ public class GestaoTrajetoServiceTests
     private readonly Mock<ILogger<GestaoTrajetoService>> _loggerMock = new();
 
     private GestaoTrajetoService CreateService() =>
-        new(_rotaRepositoryMock.Object, _rotaHistoricoRepositoryMock.Object, _loggerMock.Object);
+        new(_loggerMock.Object, _rotaRepositoryMock.Object, _rotaHistoricoRepositoryMock.Object);
 
     [Fact]
     public async Task FinalizarTrajetoAsync_DeveFinalizarQuandoExisteTrajetoEmAndamento()

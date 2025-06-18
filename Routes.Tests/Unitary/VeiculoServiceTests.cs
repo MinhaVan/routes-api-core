@@ -22,13 +22,14 @@ public class VeiculoServiceTests
     private readonly Mock<IPessoasAPI> _pessoasApiMock = new();
     private readonly Mock<IBaseRepository<Veiculo>> _veiculoRepoMock = new();
     private readonly Mock<IBaseRepository<MotoristaRota>> _motoristaRotaRepoMock = new();
-
+    private readonly Mock<IRedisRepository> _redisRepositoryMock = new();
     private VeiculoService CreateService()
     {
         return new VeiculoService(
             _mapperMock.Object,
             _userContextMock.Object,
             _pessoasApiMock.Object,
+            _redisRepositoryMock.Object,
             _veiculoRepoMock.Object,
             _motoristaRotaRepoMock.Object
         );

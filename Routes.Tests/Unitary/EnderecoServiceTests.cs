@@ -19,11 +19,13 @@ public class EnderecoServiceTests
     private readonly Mock<IBaseRepository<Endereco>> _enderecoRepoMock = new();
     private readonly Mock<IGoogleDirectionsService> _googleDirectionsServiceMock = new();
     private readonly Mock<IUserContext> _userContextMock = new();
+    private readonly Mock<IRedisRepository> _redisRepository = new();
 
     private EnderecoService CreateService()
     {
         return new EnderecoService(
             _mapperMock.Object,
+            _redisRepository.Object,
             _enderecoRepoMock.Object,
             _googleDirectionsServiceMock.Object,
             _userContextMock.Object
