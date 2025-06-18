@@ -7,6 +7,7 @@ namespace Routes.Domain.ViewModels;
 public class RotaViewModel
 {
     public int Id { get; set; }
+    public StatusEntityEnum Status { get; set; }
     public int EnderecoId { get; set; }
     public int VeiculoId { get; set; }
     public string Nome { get; set; }

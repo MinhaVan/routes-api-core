@@ -108,25 +108,14 @@ public class RotaService(
         {
             rotas = await _rotaRepository.BuscarAsync(x =>
                     x.EmpresaId == _userContext.Empresa &&
-                    (x.Status == StatusEntityEnum.Ativo || (incluirDeletados && x.Status == StatusEntityEnum.Deletado)));
+                    (x.Status == StatusEntityEnum.Ativo || (incluirDeletados && x.Status == StatusEntityEnum.Deletado)),
+                    x => incluirDetalhes ? x.Veiculo : null);
 
             if (rotas is not null && rotas.Any())
                 await _redisRepository.SetAsync(chave, rotas);
         }
 
-        var rotasViewModels = _mapper.Map<List<RotaViewModel>>(rotas);
-        if (incluirDetalhes)
-        {
-            var veiculosIds = rotas.Select(x => x.VeiculoId ?? 0).Where(x => x > 0).ToList();
-            var veiculos = await _veiculoService.ObterVeiculoAsync(veiculosIds);
-            rotasViewModels.ForEach(async rota =>
-            {
-                rota.Veiculo = veiculos.FirstOrDefault(v => v.Id == rota.VeiculoId);
-                rota.Historicos = rota.Historicos.OrderByDescending(h => h.DataRealizacao).ToList();
-            });
-        }
-
-        return rotasViewModels;
+        return _mapper.Map<List<RotaViewModel>>(rotas);
     }
 
     public async Task<List<RotaViewModel>> ObterAsync()

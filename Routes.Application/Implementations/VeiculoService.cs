@@ -107,12 +107,6 @@ public class VeiculoService(
         return dto;
     }
 
-    public async Task<IEnumerable<VeiculoViewModel>> ObterVeiculoAsync(IEnumerable<int> veiculoIds)
-    {
-        var veiculos = await _veiculoRepository.BuscarAsync(x => veiculoIds.Contains(x.Id) && x.EmpresaId == _userContext.Empresa);
-        return _mapper.Map<IEnumerable<VeiculoViewModel>>(veiculos);
-    }
-
     private async Task<Veiculo> ObterVeiculoAsync(int veiculoId)
     {
         var veiculo = await _redisRepository.GetAsync<Veiculo>($"veiculo:{veiculoId}");
