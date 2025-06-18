@@ -25,7 +25,7 @@ public class ConexaoRotaController(
             return ObterRespostaErro("Dados da localização inválido!");
 
         var localizacaoNoCache = await _redisRepository.GetAsync<EnviarLocalizacaoWebSocketResponse>(KeyRedis.EnviarLocalizacao(data.RotaId));
-        if (localizacaoNoCache.TipoMensagem == "finalizarCorrida")
+        if (localizacaoNoCache is not null && localizacaoNoCache.TipoMensagem == "finalizarCorrida")
             return Success();
 
         var response = new BaseResponse<EnviarLocalizacaoWebSocketResponse>
