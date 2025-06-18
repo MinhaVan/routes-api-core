@@ -19,10 +19,14 @@ public class ConexaoRotaController(
     IRedisRepository _redisRepository) : BaseController
 {
     [HttpPost("Localizacao")]
-    public async Task<IActionResult> AdicionarAsync([FromBody] EnviarLocalizacaoWebSocketRequest data)
+    public async Task<IActionResult> EnviarLocalizacaoAsync([FromBody] EnviarLocalizacaoWebSocketRequest data)
     {
         if (data is null)
-            return ObterRespostaErro("Dados inválidos.");
+            return ObterRespostaErro("Dados da localização inválido!");
+
+        var localizacaoNoCache = await _redisRepository.GetAsync<EnviarLocalizacaoWebSocketResponse>(ObterRedisKey(data.RotaId));
+        if (localizacaoNoCache.TipoMensagem == "finalizarCorrida")
+            return Success();
 
         var response = new BaseResponse<EnviarLocalizacaoWebSocketResponse>
         {
