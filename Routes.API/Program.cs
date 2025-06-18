@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using AspNetCoreRateLimit;
 using Routes.API.Extensions;
-using Routes.Service.Hubs;
+// using Routes.Service.Hubs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -88,7 +88,7 @@ app.UseIpRateLimiting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseWebSockets();
-app.MapHub<RotaHub>("v1/Websocket/Rotas");
+// app.MapHub<RotaHub>("v1/Websocket/Rotas");
 app.MapMetrics();
 app.MapControllers();
 
