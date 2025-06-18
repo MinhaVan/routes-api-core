@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
+using Routes.Domain.Utils;
 using Routes.Service.Exceptions;
 
 namespace Routes.Application.Implementations;
@@ -11,7 +12,8 @@ namespace Routes.Application.Implementations;
 public class GestaoTrajetoService(
     ILogger<GestaoTrajetoService> _logger,
     IBaseRepository<Rota> _rotaRepository,
-    IBaseRepository<RotaHistorico> _rotaHistoricoRepository
+    IBaseRepository<RotaHistorico> _rotaHistoricoRepository,
+    IRedisRepository _redisRepository
 ) : IGestaoTrajetoService
 {
     public async Task FinalizarTrajetoAsync(int rotaId)
@@ -87,6 +89,7 @@ public class GestaoTrajetoService(
 
             // _logger.LogInformation("[IniciarTrajetoAsync] Salvando novo trajeto {0}", JsonConvert.SerializeObject(novoTrajeto, Formatting.None));
             await _rotaHistoricoRepository.AdicionarAsync(novoTrajeto);
+            await _redisRepository.DeleteAsync(KeyRedis.EnviarLocalizacao(rotaId));
         }
         catch (Exception ex)
         {
