@@ -5,7 +5,6 @@ using AutoMapper;
 using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.APIs;
 using Routes.Domain.Interfaces.Repositories;
-using Routes.Domain.Interfaces.Repositories;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.Models;
 using Routes.Domain.ViewModels;
@@ -80,13 +79,7 @@ public class VeiculoService(
 
     public async Task<VeiculoViewModel> ObterAsync(int veiculoId, int rotaId, bool completarDadosDoUsuario = false)
     {
-        var veiculo = await _redisRepository.GetAsync<Veiculo>($"veiculo:{veiculoId}");
-        if (veiculo is null)
-        {
-            veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId && x.EmpresaId == _userContext.Empresa);
-            await _redisRepository.SetAsync($"veiculo:{veiculo.Id}", veiculo, "veiculos");
-        }
-
+        var veiculo = await ObterVeiculoAsync(veiculoId);
         var motoristaRota = await _redisRepository.GetAsync<MotoristaRota>($"motorista_rota:{rotaId}:{veiculoId}");
         if (motoristaRota is null)
         {
@@ -112,5 +105,23 @@ public class VeiculoService(
         dto.Motorista.Foto = motorista.Foto;
 
         return dto;
+    }
+
+    public async Task<IEnumerable<VeiculoViewModel>> ObterVeiculoAsync(IEnumerable<int> veiculoIds)
+    {
+        var veiculos = await _veiculoRepository.BuscarAsync(x => veiculoIds.Contains(x.Id) && x.EmpresaId == _userContext.Empresa);
+        return _mapper.Map<IEnumerable<VeiculoViewModel>>(veiculos);
+    }
+
+    private async Task<Veiculo> ObterVeiculoAsync(int veiculoId)
+    {
+        var veiculo = await _redisRepository.GetAsync<Veiculo>($"veiculo:{veiculoId}");
+        if (veiculo is null)
+        {
+            veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId && x.EmpresaId == _userContext.Empresa);
+            await _redisRepository.SetAsync($"veiculo:{veiculo.Id}", veiculo, "veiculos");
+        }
+
+        return veiculo;
     }
 }

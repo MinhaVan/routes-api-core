@@ -19,6 +19,7 @@ public class RotaService(
     IUserContext _userContext,
     IPessoasAPI _pessoasAPI,
     IRedisRepository _redisRepository,
+    IVeiculoService _veiculoService,
     IRotaHistoricoRepository _rotaHistoricoRepository,
     IBaseRepository<MotoristaRota> _motoristaRotaRepository,
     IBaseRepository<AlunoRota> _alunoRotaRepository,
@@ -98,7 +99,7 @@ public class RotaService(
         return response;
     }
 
-    public async Task<List<RotaViewModel>> ObterTodosAsync(bool incluirDeletados = false)
+    public async Task<List<RotaViewModel>> ObterTodosAsync(bool incluirDeletados = false, bool incluirDetalhes = false)
     {
         var chave = string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, incluirDeletados);
         var rotas = await _redisRepository.GetAsync<IEnumerable<Rota>>(chave);
@@ -113,7 +114,19 @@ public class RotaService(
                 await _redisRepository.SetAsync(chave, rotas);
         }
 
-        return _mapper.Map<List<RotaViewModel>>(rotas);
+        var rotasViewModels = _mapper.Map<List<RotaViewModel>>(rotas);
+        if (incluirDetalhes)
+        {
+            var veiculosIds = rotas.Select(x => x.VeiculoId ?? 0).Where(x => x > 0).ToList();
+            var veiculos = await _veiculoService.ObterVeiculoAsync(veiculosIds);
+            rotasViewModels.ForEach(async rota =>
+            {
+                rota.Veiculo = veiculos.FirstOrDefault(v => v.Id == rota.VeiculoId);
+                rota.Historicos = rota.Historicos.OrderByDescending(h => h.DataRealizacao).ToList();
+            });
+        }
+
+        return rotasViewModels;
     }
 
     public async Task<List<RotaViewModel>> ObterAsync()

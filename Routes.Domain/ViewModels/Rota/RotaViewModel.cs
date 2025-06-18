@@ -15,6 +15,7 @@ public class RotaViewModel
     public TimeOnly Horario { get; set; }
     public TipoRotaEnum TipoRota { get; set; }
     //
+    public virtual VeiculoViewModel Veiculo { get; set; }
     public virtual List<AlunoRotaViewModel> AlunoRotas { get; set; }
     public virtual List<RotaHistoricoViewModel> Historicos { get; set; }
 }
