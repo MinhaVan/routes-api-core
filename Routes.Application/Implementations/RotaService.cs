@@ -48,6 +48,7 @@ public class RotaService(
         model.DiaSemana = rotaAtualizarViewModel.DiaSemana;
         model.Horario = rotaAtualizarViewModel.Horario;
         model.TipoRota = rotaAtualizarViewModel.TipoRota;
+        model.Status = rotaAtualizarViewModel.Status;
         await LimparCache();
 
         await _rotaRepository.AtualizarAsync(model);
