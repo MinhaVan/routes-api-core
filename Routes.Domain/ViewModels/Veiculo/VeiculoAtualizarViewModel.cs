@@ -11,5 +11,6 @@ public class VeiculoAtualizarViewModel
     public string Marca { get; set; }
     public string Modelo { get; set; }
     public string Placa { get; set; }
+    public int QuantidadePessoasSuportada { get; set; }
     public TipoVeiculoEnum TipoVeiculo { get; set; }
 }

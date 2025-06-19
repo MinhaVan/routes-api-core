@@ -13,6 +13,7 @@ public class Veiculo : Entity
     public string Placa { get; set; }
     public TipoVeiculoEnum TipoVeiculo { get; set; }
     public int EmpresaId { get; set; }
+    public int QuantidadePessoasSuportada { get; set; }
     //
     public virtual List<Rota> Rotas { get; set; }
 }

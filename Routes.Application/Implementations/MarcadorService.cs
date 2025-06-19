@@ -27,9 +27,10 @@ public class MarcadorService(
         var alunosId = rota.AlunoRotas.Select(x => x.AlunoId).ToList();
         var alunosResponse = await _pessoasAPI.ObterAlunoPorIdAsync(alunosId);
         var alunos = alunosResponse.Data;
+        var now = DateTime.Now;
 
         var ajusteAlunoRota = await _ajusteAlunoRotaRepository
-            .BuscarAsync(x => alunosId.Contains(x.AlunoId) && x.RotaId == rotaId,
+            .BuscarAsync(x => alunosId.Contains(x.AlunoId) && x.Data.Date == now.Date && x.RotaId == rotaId,
                 z => z.EnderecoDestino,
                 z => z.EnderecoPartida,
                 z => z.EnderecoRetorno);

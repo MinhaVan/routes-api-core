@@ -71,7 +71,9 @@ public class GoogleDirectionsService(
 
         return new BaseResponse<List<Marcador>>
         {
-            Data = rotaFinal
+            Data = rotaFinal,
+            Sucesso = true,
+            Mensagem = "Rota ideal obtida com sucesso."
         };
     }
 }

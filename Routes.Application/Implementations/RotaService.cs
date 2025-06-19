@@ -121,7 +121,7 @@ public class RotaService(
 
     public async Task<List<AlunoRotaOnlineViewModel>> ObterRotasDosFilhosAsync()
     {
-        var alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
+        var alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync(obterEnderecos: false);
         var alunosId = alunos.Data.Select(x => x.Id).ToList();
 
         var response = await _rotaRepository.BuscarAsync(
