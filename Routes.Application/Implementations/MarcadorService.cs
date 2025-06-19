@@ -31,7 +31,7 @@ public class MarcadorService(
             var enderecosIds = ordemTrajeto.Marcadores.Select(x => x.EnderecoId).Distinct().ToList();
             var enderecos = await _enderecoRepository.BuscarAsync(x => enderecosIds.Contains(x.Id));
 
-            ordemTrajeto.Marcadores.ForEach((m) =>
+            foreach (var m in ordemTrajeto.Marcadores.OrderBy(x => x.Ordem))
             {
                 var marcadorViewModel = new Marcador
                 {
@@ -45,7 +45,7 @@ public class MarcadorService(
                     TipoMarcador = m.TipoMarcador
                 };
                 marcadores.Add(marcadorViewModel);
-            });
+            }
         }
         else
         {
