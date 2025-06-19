@@ -47,16 +47,30 @@ public class TrajetoController(
         return Success(rota);
     }
 
+    /// <summary>
+    /// Salva a ordem do trajeto para a rota especificada (Feita manualmente pelo usuário).
+    /// Este método permite que o usuário defina a ordem dos marcadores no trajeto de uma rota específica.
+    /// A ordem é salva no banco de dados e pode ser utilizada para otimização de rotas.
+    /// </summary>
+    /// <param name="rotaId">Identificador da rota</param>
+    /// <param name="body">Marcadores otimizados pelo usuário</param>
+    /// <returns>Objeto informando sucesso/falha</returns>
     [HttpPost("Rota/{rotaId}")]
-    // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> SalvarOrdemDoTrajetoAsync([FromRoute] int rotaId, [FromBody] List<Marcador> body)
     {
         await _ordemTrajetoService.SalvarOrdemDoTrajetoAsync(rotaId, body);
         return Success();
     }
 
+    /// <summary>
+    /// Obtém todos os marcadores associados a uma rota específica.
+    /// Este método retorna uma lista de marcadores que estão associados à rota especificada.
+    /// Os marcadores podem incluir pontos de interesse, paradas ou outros locais relevantes para a rota.
+    /// A lista é utilizada para visualização e planejamento de rotas.
+    /// </summary>
+    /// <param name="rotaId">Identificador da rota</param>
+    /// <returns>Lista de marcadores</returns>
     [HttpGet("Rota/{rotaId}/marcadores")]
-    // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> ObterTodosMarcadoresParaRotasAsync([FromRoute] int rotaId)
     {
         var response = await _marcadorService.ObterTodosMarcadoresParaRotasAsync(rotaId);
@@ -64,7 +78,6 @@ public class TrajetoController(
     }
 
     [HttpGet("Rota/{rotaId}")]
-    // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> ObterTrajetoEmAndamentoAsync([FromRoute] int rotaId)
     {
         var response = await _trajetoService.ObterTrajetoEmAndamentoAsync(rotaId);
@@ -72,7 +85,6 @@ public class TrajetoController(
     }
 
     [HttpPost("Rota/{rotaId}/iniciar")]
-    // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> IniciarTrajetoAsync([FromRoute] int rotaId)
     {
         await _gestaoTrajetoService.IniciarTrajetoAsync(rotaId);
@@ -80,23 +92,38 @@ public class TrajetoController(
     }
 
     [HttpPost("Rota/{rotaId}/finalizar")]
-    // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> FinalizarTrajetoAsync([FromRoute] int rotaId)
     {
         await _gestaoTrajetoService.FinalizarTrajetoAsync(rotaId);
         return Success();
     }
 
+    /// <summary>
+    /// Atualiza o status de um aluno no trajeto da rota especificada.
+    /// Este método permite marcar se um aluno entrou ou não na van durante o trajeto.
+    /// O status é atualizado no banco de dados e pode ser utilizado para monitoramento do trajeto
+    /// </summary>
+    /// <param name="alunoId">Identificador do aluno</param>
+    /// <param name="rotaId">Identificador da rota</param>
+    /// <param name="alunoEntrouNaVan">Status informando se aluno entrou ou não na van</param>
+    /// <returns>Objeto HTTP com sucesso/falha</returns>
     [HttpPut("rota/{rotaId}/aluno/{alunoId}/{alunoEntrouNaVan}")]
-    // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> AtualizarStatusAlunoTrajetoAsync([FromRoute] int alunoId, [FromRoute] int rotaId, [FromRoute] bool alunoEntrouNaVan)
     {
         await _trajetoService.AtualizarStatusAlunoTrajetoAsync(alunoId, rotaId, alunoEntrouNaVan);
         return Success();
     }
 
+    /// <summary>
+    /// Gera um relatório do último trajeto realizado para a rota especificada.
+    /// Este método é utilizado ao final de um trajeto para compilar informações sobre o percurso,
+    /// incluindo pontos de partida, chegada e quaisquer paradas intermediárias.
+    /// O relatório pode incluir detalhes como distância percorrida, tempo gasto e status dos alunos durante o trajeto.
+    /// O resultado é utilizado para análise e melhoria dos trajetos futuros.
+    /// </summary>
+    /// <param name="rotaId"></param>
+    /// <returns></returns>
     [HttpGet("Relatorio/Rota/{rotaId}")]
-    // [AuthorizeRoles(PerfilEnum.Administrador, PerfilEnum.Suporte, PerfilEnum.Motorista)]
     public async Task<IActionResult> RelatorioTrajetoAsync([FromRoute] int rotaId)
     {
         var response = await _relatorioTrajetoService.RelatorioUltimoTrajetoAsync(rotaId);

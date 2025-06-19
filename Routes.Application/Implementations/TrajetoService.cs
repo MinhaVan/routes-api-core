@@ -12,6 +12,7 @@ using Routes.Domain.ViewModels.Rota;
 using Routes.Service.Exceptions;
 using Microsoft.Extensions.Logging;
 using Routes.Domain.Interfaces.APIs;
+using Routes.Domain.Utils;
 
 namespace Routes.Service.Implementations;
 
@@ -20,6 +21,7 @@ public class TrajetoService(
     IMapper _mapper,
     IPessoasAPI _pessoasAPI,
     IMarcadorService _marcadorService,
+    IRabbitMqRepository _rabbitMqRepository,
     IOrdemTrajetoService _ordemTrajetoService,
     IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository,
     IBaseRepository<Endereco> _enderecoRepository,
@@ -60,7 +62,17 @@ public class TrajetoService(
                 };
 
                 await _alunoRotaHistoricoRepository.AdicionarAsync(model);
+                alunoRotaHistorico = model;
             }
+
+            _rabbitMqRepository.Publish(
+                RabbitMqQueues.EnviarNotificacaoResponsavel,
+                new BaseQueue<AlunoRotaHistorico>
+                {
+                    Mensagem = alunoRotaHistorico,
+                    Retry = 0
+                }
+            );
         }
         catch (Exception ex)
         {

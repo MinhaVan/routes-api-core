@@ -13,7 +13,7 @@ public class RabbitMqRepository(
     ILogger<RabbitMqRepository> _logger
 ) : IRabbitMqRepository
 {
-    public void Publish<T>(string queue, T data, bool shouldThrowException = true)
+    public void Publish<T>(string queue, T data, bool shouldThrowException = false)
     {
         try
         {
