@@ -15,27 +15,56 @@ namespace Routes.Application.Implementations;
 
 public class MarcadorService(
     IPessoasAPI _pessoasAPI,
+    IBaseRepository<Endereco> _enderecoRepository,
     IBaseRepository<Rota> _rotaRepository,
+    IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository,
     IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository,
     IMapper _mapper) : IMarcadorService
 {
     public async Task<List<Marcador>> ObterTodosMarcadoresParaRotasAsync(int rotaId)
     {
         var marcadores = new List<Marcador>();
-        var rota = await _rotaRepository.BuscarUmAsync(x => x.Id == rotaId, z => z.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo));
 
-        var alunosId = rota.AlunoRotas.Select(x => x.AlunoId).ToList();
-        var alunosResponse = await _pessoasAPI.ObterAlunoPorIdAsync(alunosId);
-        var alunos = alunosResponse.Data;
-        var now = DateTime.UtcNow;
+        var ordemTrajeto = await _ordemTrajetoRepository.BuscarUmAsync(x => x.RotaId == rotaId, z => z.Marcadores);
+        if (ordemTrajeto is not null)
+        {
+            var enderecosIds = ordemTrajeto.Marcadores.Select(x => x.EnderecoId).Distinct().ToList();
+            var enderecos = await _enderecoRepository.BuscarAsync(x => enderecosIds.Contains(x.Id));
 
-        var ajusteAlunoRota = await _ajusteAlunoRotaRepository
-            .BuscarAsync(x => alunosId.Contains(x.AlunoId) && x.Data.Date == now.Date && x.RotaId == rotaId,
-                z => z.EnderecoDestino,
-                z => z.EnderecoPartida,
-                z => z.EnderecoRetorno);
+            ordemTrajeto.Marcadores.ForEach((m) =>
+            {
+                var marcadorViewModel = new Marcador
+                {
+                    EnderecoId = m.EnderecoId,
+                    Id = m.Id,
+                    IdTemporario = Guid.NewGuid().ToString(),
+                    Latitude = m.Latitude,
+                    Longitude = m.Longitude,
+                    Ordem = m.Ordem,
+                    Titulo = enderecos.FirstOrDefault(x => x.Id == m.EnderecoId)?.ObterEndereco() ?? "Sem Endereço",
+                    TipoMarcador = m.TipoMarcador
+                };
+                marcadores.Add(marcadorViewModel);
+            });
+        }
+        else
+        {
+            var rota = await _rotaRepository.BuscarUmAsync(x => x.Id == rotaId, z => z.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo));
 
-        marcadores.AddRange(ObterMarcadorPorRotaDirecao(alunos, rota.TipoRota, rotaId));
+            var alunosId = rota.AlunoRotas.Select(x => x.AlunoId).ToList();
+            var alunosResponse = await _pessoasAPI.ObterAlunoPorIdAsync(alunosId);
+            var alunos = alunosResponse.Data;
+            var now = DateTime.UtcNow;
+
+            var ajusteAlunoRota = await _ajusteAlunoRotaRepository
+                .BuscarAsync(x => alunosId.Contains(x.AlunoId) && x.Data.Date == now.Date && x.RotaId == rotaId,
+                    z => z.EnderecoDestino,
+                    z => z.EnderecoPartida,
+                    z => z.EnderecoRetorno);
+
+            marcadores.AddRange(ObterMarcadorPorRotaDirecao(alunos, rota.TipoRota, rotaId));
+        }
+
         return marcadores;
     }
 

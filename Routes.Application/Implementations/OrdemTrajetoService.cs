@@ -28,6 +28,7 @@ public class OrdemTrajetoService(
             Status = StatusEntityEnum.Ativo,
             Marcadores = marcadoresOrdenados.Select(x => new OrdemTrajetoMarcador
             {
+                Ordem = x.Ordem,
                 EnderecoId = x.EnderecoId ?? 0,
                 Latitude = x.Latitude,
                 Longitude = x.Longitude,
