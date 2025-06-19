@@ -58,9 +58,9 @@ public class RotaController : BaseController
     }
 
     [HttpGet("ObterRotasDosFilhos")]
-    public async Task<IActionResult> ObterAsync()
+    public async Task<IActionResult> ObterRotasDosFilhosAsync()
     {
-        var rotas = await _rotaService.ObterAsync();
+        var rotas = await _rotaService.ObterRotasDosFilhosAsync();
         return Success(rotas);
     }
 

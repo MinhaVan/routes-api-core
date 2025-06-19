@@ -12,7 +12,7 @@ public interface IRotaService
     Task DeletarAsync(int id);
     Task<RotaViewModel> ObterAsync(int id);
     Task<RotaDetalheViewModel> ObterDetalheAsync(int id);
-    Task<List<RotaViewModel>> ObterAsync();
+    Task<List<AlunoRotaOnlineViewModel>> ObterRotasDosFilhosAsync();
     Task<List<RotaViewModel>> ObterRotasOnlineAsync();
     Task<List<RotaViewModel>> ObterPorAlunoIdAsync(int id);
     Task<List<RotaViewModel>> ObterRotaDoMotoristaAsync(int motoristaId, bool filtrarApenasHoje);

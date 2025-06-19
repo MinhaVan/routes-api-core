@@ -119,23 +119,34 @@ public class RotaService(
         return _mapper.Map<List<RotaViewModel>>(rotas);
     }
 
-    public async Task<List<RotaViewModel>> ObterAsync()
+    public async Task<List<AlunoRotaOnlineViewModel>> ObterRotasDosFilhosAsync()
     {
-        var Alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
-        var AlunosId = Alunos.Data.Select(x => x.Id).ToList();
+        var alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
+        var alunosId = alunos.Data.Select(x => x.Id).ToList();
 
         var response = await _rotaRepository.BuscarAsync(
-            x => x.EmpresaId == _userContext.Empresa
-                 && x.Status == StatusEntityEnum.Ativo
-                 && x.AlunoRotas.Any(f => AlunosId.Contains(f.AlunoId)),
+            x => x.Status == StatusEntityEnum.Ativo
+                 && x.AlunoRotas.Any(f => alunosId.Contains(f.AlunoId)),
             x => x.AlunoRotas,
             x => x.Historicos.OrderByDescending(x => x.DataCriacao)
         );
 
-        // if (!response.Any(x => x.Historicos.Any()))
-        //     return default!;
+        var alunosRotasOnline = new List<AlunoRotaOnlineViewModel>();
+        alunos.Data.ForEach(aluno =>
+        {
+            var rota = response.FirstOrDefault(x => x.AlunoRotas.Any(f => f.AlunoId == aluno.Id));
+            if (rota is not null)
+            {
+                var alunoRotaOnline = new AlunoRotaOnlineViewModel
+                {
+                    Rota = _mapper.Map<RotaViewModel>(rota),
+                    Aluno = _mapper.Map<AlunoViewModel>(aluno),
+                    IsOnline = rota.Historicos.Any(z => z.DataFim == null && z.EmAndamento)
+                };
+            }
+        });
 
-        return _mapper.Map<List<RotaViewModel>>(response);
+        return alunosRotasOnline;
     }
 
     public async Task<List<RotaViewModel>> ObterRotasOnlineAsync()
