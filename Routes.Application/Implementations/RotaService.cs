@@ -132,7 +132,7 @@ public class RotaService(
         );
 
         var alunosRotasOnline = new List<AlunoRotaOnlineViewModel>();
-        alunos.Data.ForEach(aluno =>
+        alunos.Data.ForEach(async aluno =>
         {
             var rota = response.FirstOrDefault(x => x.AlunoRotas.Any(f => f.AlunoId == aluno.Id));
             if (rota is not null)
@@ -143,6 +143,7 @@ public class RotaService(
                     Aluno = _mapper.Map<AlunoViewModel>(aluno),
                     IsOnline = rota.Historicos.Any(z => z.DataFim == null && z.EmAndamento)
                 };
+                alunosRotasOnline.Add(alunoRotaOnline);
             }
         });
 
