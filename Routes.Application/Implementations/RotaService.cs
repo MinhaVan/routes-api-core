@@ -16,10 +16,8 @@ namespace Routes.Service.Implementations;
 
 public class RotaService(
     IMapper _mapper,
-    IUserContext _userContext,
     IPessoasAPI _pessoasAPI,
     IRedisRepository _redisRepository,
-    IVeiculoService _veiculoService,
     IRotaHistoricoRepository _rotaHistoricoRepository,
     IBaseRepository<MotoristaRota> _motoristaRotaRepository,
     IBaseRepository<AlunoRota> _alunoRotaRepository,
@@ -29,12 +27,11 @@ public class RotaService(
     public async Task<RotaViewModel> AdicionarAsync(RotaAdicionarViewModel rotaAdicionarViewModel)
     {
         var model = _mapper.Map<Rota>(rotaAdicionarViewModel);
-        model.EmpresaId = _userContext.Empresa;
         model.Status = StatusEntityEnum.Ativo;
         model.TipoRota = rotaAdicionarViewModel.TipoRota;
 
         await _rotaRepository.AdicionarAsync(model);
-        await LimparCache();
+        await LimparCache(model.EmpresaId);
 
         return _mapper.Map<RotaViewModel>(model);
     }
@@ -49,7 +46,7 @@ public class RotaService(
         model.Horario = rotaAtualizarViewModel.Horario;
         model.TipoRota = rotaAtualizarViewModel.TipoRota;
         model.Status = rotaAtualizarViewModel.Status;
-        await LimparCache();
+        await LimparCache(model.EmpresaId);
 
         await _rotaRepository.AtualizarAsync(model);
     }
@@ -61,26 +58,14 @@ public class RotaService(
         model.Status = StatusEntityEnum.Deletado;
         model.AlunoRotas.ToList().ForEach(item => item.Status = StatusEntityEnum.Deletado);
         model.MotoristaRotas.ToList().ForEach(item => item.Status = StatusEntityEnum.Deletado);
-        await LimparCache();
+        await LimparCache(model.EmpresaId);
 
         await _rotaRepository.AtualizarAsync(model);
     }
-
-    public async Task<RotaViewModel> ObterAsync(int id)
-    {
-        var response = await _rotaRepository.BuscarUmAsync(x =>
-            x.Id == id && x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo,
-            x => x.AlunoRotas,
-            x => x.Historicos,
-            x => x.Historicos.OrderByDescending(x => x.DataCriacao));
-
-        return _mapper.Map<RotaViewModel>(response);
-    }
-
     public async Task<RotaDetalheViewModel> ObterDetalheAsync(int id)
     {
         var rota = await _rotaRepository.BuscarUmAsync(x =>
-            x.Id == id && x.EmpresaId == _userContext.Empresa && x.Status == StatusEntityEnum.Ativo,
+            x.Id == id && x.Status == StatusEntityEnum.Ativo,
             x => x.AlunoRotas.Where(x => x.Status == StatusEntityEnum.Ativo),
             x => x.Historicos.OrderByDescending(x => x.DataCriacao));
 
@@ -100,15 +85,15 @@ public class RotaService(
         return response;
     }
 
-    public async Task<List<RotaViewModel>> ObterTodosAsync(bool incluirDeletados = false, bool incluirDetalhes = false)
+    public async Task<List<RotaViewModel>> ObterTodosAsync(int empresaId, bool incluirDeletados = false, bool incluirDetalhes = false)
     {
-        var chave = string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, incluirDeletados);
+        var chave = string.Format(KeyRedis.Rotas.Empresa, empresaId, incluirDeletados);
         var rotas = await _redisRepository.GetAsync<IEnumerable<Rota>>(chave);
 
         if (rotas is null || !rotas.Any())
         {
             rotas = await _rotaRepository.BuscarAsync(x =>
-                    x.EmpresaId == _userContext.Empresa &&
+                    x.EmpresaId == empresaId &&
                     (x.Status == StatusEntityEnum.Ativo || (incluirDeletados && x.Status == StatusEntityEnum.Deletado)),
                     x => x.Veiculo);
 
@@ -119,13 +104,28 @@ public class RotaService(
         return _mapper.Map<List<RotaViewModel>>(rotas);
     }
 
-    public async Task<List<RotaViewModel>> ObterAsync()
+    public async Task<List<RotaViewModel>> ObterRotasDosFilhosAsync()
+    {
+        var alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
+        var alunosId = alunos.Data.Select(x => x.Id).ToList();
+
+        var response = await _rotaRepository.BuscarAsync(
+            x => x.Status == StatusEntityEnum.Ativo
+                 && x.AlunoRotas.Any(f => alunosId.Contains(f.AlunoId)),
+            x => x.AlunoRotas,
+            x => x.Historicos.OrderByDescending(x => x.DataCriacao)
+        );
+
+        return _mapper.Map<List<RotaViewModel>>(response);
+    }
+
+    public async Task<List<RotaViewModel>> ObterPorEmpresaAsync(int empresaId)
     {
         var Alunos = await _pessoasAPI.ObterAlunoPorResponsavelIdAsync();
         var AlunosId = Alunos.Data.Select(x => x.Id).ToList();
 
         var response = await _rotaRepository.BuscarAsync(
-            x => x.EmpresaId == _userContext.Empresa
+            x => x.EmpresaId == empresaId
                  && x.Status == StatusEntityEnum.Ativo
                  && x.AlunoRotas.Any(f => AlunosId.Contains(f.AlunoId)),
             x => x.AlunoRotas,
@@ -146,8 +146,7 @@ public class RotaService(
             return default!;
 
         var response = await _rotaRepository.BuscarAsync(
-            x => x.EmpresaId == _userContext.Empresa
-                 && x.Status == StatusEntityEnum.Ativo
+            x => x.Status == StatusEntityEnum.Ativo
                  && x.AlunoRotas.Any(f => alunosId.Contains(f.AlunoId))
                  && x.Historicos.Any(z => z.DataFim == null && z.EmAndamento),
             x => x.AlunoRotas,
@@ -158,6 +157,17 @@ public class RotaService(
             return default!;
 
         return _mapper.Map<List<RotaViewModel>>(response);
+    }
+
+    public async Task<RotaViewModel> ObterPorRotaIdAsync(int rotaId)
+    {
+        var response = await _rotaRepository.BuscarUmAsync(x =>
+            x.Id == rotaId && x.Status == StatusEntityEnum.Ativo,
+            x => x.AlunoRotas,
+            x => x.Historicos,
+            x => x.Historicos.OrderByDescending(x => x.DataCriacao));
+
+        return _mapper.Map<RotaViewModel>(response);
     }
 
     public async Task<List<RotaViewModel>> ObterPorAlunoIdAsync(int id)
@@ -209,12 +219,12 @@ public class RotaService(
         return rotasViewModel;
     }
 
-    private async Task LimparCache()
+    private async Task LimparCache(int empresaId)
     {
         var tasks = new[]
         {
-            _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, false)),
-            _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, _userContext.Empresa, true))
+            _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, empresaId, false)),
+            _redisRepository.DeleteAsync(string.Format(KeyRedis.Rotas.Empresa, empresaId, true))
         };
 
         await Task.WhenAll(tasks);

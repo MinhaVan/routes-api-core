@@ -6,6 +6,7 @@ public class VeiculoAdicionarViewModel
 {
     public int Ano { get; set; }
     public int AnoModelo { get; set; }
+    public int EmpresaId { get; set; }
     public string Cor { get; set; }
     public string Marca { get; set; }
     public string Modelo { get; set; }

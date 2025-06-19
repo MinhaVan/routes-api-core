@@ -11,7 +11,6 @@ public class AlunoViewModel
     public string Email { get; set; }
     public string CPF { get; set; }
     public int ResponsavelId { get; set; }
-    public int EmpresaId { get; set; }
     public int EnderecoPartidaId { get; set; }
     public int EnderecoDestinoId { get; set; }
     public int? EnderecoRetornoId { get; set; }

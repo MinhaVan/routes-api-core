@@ -47,20 +47,21 @@ public class RotaController : BaseController
         return Success();
     }
 
-    [HttpGet]
+    [HttpGet("Empresa/{empresaId}")]
     public async Task<IActionResult> ObterTodosAsync(
+        [FromRoute] int empresaId,
         [FromQuery] bool incluirDeletados = false,
         [FromQuery] bool incluirDetalhes = false
     )
     {
-        var rotas = await _rotaService.ObterTodosAsync(incluirDeletados, incluirDetalhes);
+        var rotas = await _rotaService.ObterTodosAsync(empresaId, incluirDeletados, incluirDetalhes);
         return Success(rotas);
     }
 
     [HttpGet("ObterRotasDosFilhos")]
-    public async Task<IActionResult> ObterAsync()
+    public async Task<IActionResult> ObterRotasDosFilhosAsync()
     {
-        var rotas = await _rotaService.ObterAsync();
+        var rotas = await _rotaService.ObterRotasDosFilhosAsync();
         return Success(rotas);
     }
 
@@ -71,10 +72,10 @@ public class RotaController : BaseController
         return Success(rotas);
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> ObterAsync(int id)
+    [HttpGet("{rotaId}")]
+    public async Task<IActionResult> ObterAsync(int rotaId)
     {
-        var rota = await _rotaService.ObterAsync(id);
+        var rota = await _rotaService.ObterPorRotaIdAsync(rotaId);
         return Success(rota);
     }
 

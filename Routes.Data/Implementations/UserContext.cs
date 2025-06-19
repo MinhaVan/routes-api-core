@@ -32,23 +32,6 @@ public class UserContext : IUserContext
         }
     }
 
-    public int Empresa
-    {
-        get
-        {
-            try
-            {
-                var claims = _httpContextAccessor.HttpContext.User.Claims;
-                var empresaClaim = claims.FirstOrDefault(c => c.Type == "Empresa");
-                return int.Parse(empresaClaim.Value);
-            }
-            catch (System.Exception)
-            {
-                throw new UnauthorizedAccessException("Erro ao acessar a empresa do token.");
-            }
-        }
-    }
-
     public int UserId
     {
         get

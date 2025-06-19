@@ -29,7 +29,6 @@ public class RotaServiceTests
     {
         return new RotaService(
             _mapperMock.Object,
-            _userContextMock.Object,
             _pessoasApiMock.Object,
             _redisRepository.Object,
             _rotaHistoricoRepoMock.Object,
@@ -47,7 +46,6 @@ public class RotaServiceTests
         var rotaViewModel = new RotaViewModel();
 
         _mapperMock.Setup(m => m.Map<Rota>(viewModel)).Returns(rota);
-        _userContextMock.SetupGet(u => u.Empresa).Returns(1);
         _rotaRepoMock.Setup(r => r.AdicionarAsync(rota)).Returns(Task.CompletedTask);
         _mapperMock.Setup(m => m.Map<RotaViewModel>(rota)).Returns(rotaViewModel);
 
@@ -105,7 +103,6 @@ public class RotaServiceTests
         var rota = new Rota();
         var rotaViewModel = new RotaViewModel();
 
-        _userContextMock.SetupGet(u => u.Empresa).Returns(1);
         _rotaRepoMock.Setup(r => r.BuscarUmAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Rota, bool>>>(), It.IsAny<System.Linq.Expressions.Expression<Func<Rota, object>>[]>())).ReturnsAsync(rota);
         _mapperMock.Setup(m => m.Map<RotaViewModel>(rota)).Returns(rotaViewModel);
 
@@ -124,7 +121,6 @@ public class RotaServiceTests
         var detalheViewModel = new RotaDetalheViewModel();
         var alunoDetalheViewModels = new List<AlunoDetalheViewModel> { new AlunoDetalheViewModel() };
 
-        _userContextMock.SetupGet(u => u.Empresa).Returns(1);
         _rotaRepoMock.Setup(r => r.BuscarUmAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Rota, bool>>>(), It.IsAny<System.Linq.Expressions.Expression<Func<Rota, object>>[]>())).ReturnsAsync(rota);
         _alunoRotaRepoMock.Setup(r => r.BuscarAsync(It.IsAny<System.Linq.Expressions.Expression<Func<AlunoRota, bool>>>(), It.IsAny<System.Linq.Expressions.Expression<Func<AlunoRota, object>>[]>())).ReturnsAsync(alunosRotas);
         _pessoasApiMock.Setup(p => p.ObterAlunoPorIdAsync(It.IsAny<List<int>>())).ReturnsAsync(alunos);
@@ -146,7 +142,6 @@ public class RotaServiceTests
         var rotas = new List<Rota> { new Rota() };
         var rotasViewModel = new List<RotaViewModel> { new RotaViewModel() };
 
-        _userContextMock.SetupGet(u => u.Empresa).Returns(1);
         _rotaRepoMock.Setup(r => r.BuscarAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Rota, bool>>>(), It.IsAny<System.Linq.Expressions.Expression<Func<Rota, object>>[]>())).ReturnsAsync(rotas);
         _mapperMock.Setup(m => m.Map<List<RotaViewModel>>(rotas)).Returns(rotasViewModel);
 
@@ -164,7 +159,6 @@ public class RotaServiceTests
         var rotasViewModel = new List<RotaViewModel> { new RotaViewModel() };
 
         _pessoasApiMock.Setup(p => p.ObterAlunoPorResponsavelIdAsync(It.IsAny<bool>(), It.IsAny<string>())).ReturnsAsync(alunos);
-        _userContextMock.SetupGet(u => u.Empresa).Returns(1);
         _rotaRepoMock.Setup(r => r.BuscarAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Rota, bool>>>(), It.IsAny<System.Linq.Expressions.Expression<Func<Rota, object>>[]>())).ReturnsAsync(rotas);
         _mapperMock.Setup(m => m.Map<List<RotaViewModel>>(rotas)).Returns(rotasViewModel);
 
@@ -182,7 +176,6 @@ public class RotaServiceTests
         var rotasViewModel = new List<RotaViewModel> { new RotaViewModel() };
 
         _pessoasApiMock.Setup(p => p.ObterAlunoPorResponsavelIdAsync(It.IsAny<bool>(), It.IsAny<string>())).ReturnsAsync(alunos);
-        _userContextMock.SetupGet(u => u.Empresa).Returns(1);
         _rotaRepoMock.Setup(r => r.BuscarAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Rota, bool>>>(), It.IsAny<System.Linq.Expressions.Expression<Func<Rota, object>>[]>())).ReturnsAsync(rotas);
         _mapperMock.Setup(m => m.Map<List<RotaViewModel>>(rotas)).Returns(rotasViewModel);
 

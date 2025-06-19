@@ -6,14 +6,15 @@ namespace Routes.Domain.Interfaces.Services;
 
 public interface IRotaService
 {
-    Task<List<RotaViewModel>> ObterTodosAsync(bool incluirDeletados = false, bool incluirDetalhes = false);
+    Task<List<RotaViewModel>> ObterTodosAsync(int empresaId, bool incluirDeletados = false, bool incluirDetalhes = false);
     Task<RotaViewModel> AdicionarAsync(RotaAdicionarViewModel rotaAdicionarViewModel);
     Task AtualizarAsync(RotaAtualizarViewModel rotaAtualizarViewModel);
     Task DeletarAsync(int id);
-    Task<RotaViewModel> ObterAsync(int id);
+    Task<List<RotaViewModel>> ObterRotasDosFilhosAsync();
     Task<RotaDetalheViewModel> ObterDetalheAsync(int id);
-    Task<List<RotaViewModel>> ObterAsync();
+    Task<List<RotaViewModel>> ObterPorEmpresaAsync(int empresaId);
     Task<List<RotaViewModel>> ObterRotasOnlineAsync();
+    Task<RotaViewModel> ObterPorRotaIdAsync(int rotaId);
     Task<List<RotaViewModel>> ObterPorAlunoIdAsync(int id);
     Task<List<RotaViewModel>> ObterRotaDoMotoristaAsync(int motoristaId, bool filtrarApenasHoje);
 }

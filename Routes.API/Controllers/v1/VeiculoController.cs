@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Routes.Domain.Enums;
 using Routes.Domain.Interfaces.Services;
 using Routes.Domain.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -47,10 +46,10 @@ public class VeiculoController : BaseController
         return Success();
     }
 
-    [HttpGet]
-    public async Task<IActionResult> ObterAsync([FromQuery] bool incluirDeletados = false)
+    [HttpGet("{empresaId}")]
+    public async Task<IActionResult> ObterAsync([FromRoute] int empresaId, [FromQuery] bool incluirDeletados = false)
     {
-        var veiculo = await _veiculoService.ObterAsync(incluirDeletados);
+        var veiculo = await _veiculoService.ObterAsync(empresaId, incluirDeletados);
         return Success(veiculo);
     }
 

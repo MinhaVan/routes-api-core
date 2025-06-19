@@ -27,7 +27,6 @@ public class AlunoDetalheViewModel
     public string Contato { get; set; }
     public string Email { get; set; }
     public int ResponsavelId { get; set; }
-    public int EmpresaId { get; set; }
     public int EnderecoPartidaId { get; set; }
     public int EnderecoRetornoId { get; set; }
     public int EnderecoDestinoId { get; set; }
@@ -53,5 +52,4 @@ public class UsuarioDetalheViewModel
     public string Senha { get; set; }
     public string RefreshToken { get; set; }
     public DateTime RefreshTokenExpiryTime { get; set; }
-    public int EmpresaId { get; set; }
 }

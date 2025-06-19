@@ -15,7 +15,6 @@ namespace Routes.Service.Implementations;
 
 public class VeiculoService(
     IMapper _mapper,
-    IUserContext _userContext,
     IPessoasAPI _pessoasAPI,
     IRedisRepository _redisRepository,
     IBaseRepository<Veiculo> _veiculoRepository,
@@ -25,16 +24,11 @@ public class VeiculoService(
     public async Task AdicionarAsync(List<VeiculoAdicionarViewModel> veiculosViewModels)
     {
         var veiculos = _mapper.Map<List<Veiculo>>(veiculosViewModels);
-        await Parallel.ForEachAsync(veiculos, async (item, token) =>
-        {
-            item.EmpresaId = _userContext.Empresa;
-            await Task.CompletedTask;
-        });
         await _veiculoRepository.AdicionarAsync(veiculos);
         foreach (var veiculo in veiculos)
         {
             await _redisRepository.DeleteAsync($"veiculo:{veiculo.Id}");
-            await _redisRepository.DeleteAsync($"veiculos:empresa:{_userContext.Empresa}");
+            await _redisRepository.DeleteAsync($"veiculos:empresa:{veiculo.EmpresaId}");
             await _redisRepository.SetAsync($"veiculo:{veiculo.Id}", veiculo, "veiculos");
         }
     }
@@ -42,11 +36,6 @@ public class VeiculoService(
     public async Task AtualizarAsync(List<VeiculoAtualizarViewModel> veiculosViewModels)
     {
         var veiculos = _mapper.Map<List<Veiculo>>(veiculosViewModels);
-        await Parallel.ForEachAsync(veiculos, async (item, token) =>
-        {
-            item.EmpresaId = _userContext.Empresa;
-            await Task.CompletedTask;
-        });
         await _veiculoRepository.AtualizarAsync(veiculos);
         foreach (var veiculo in veiculos)
         {
@@ -57,8 +46,8 @@ public class VeiculoService(
         }
 
         await Task.WhenAll(
-            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, false)),
-            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, true))
+            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(veiculos.FirstOrDefault().EmpresaId, false)),
+            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(veiculos.FirstOrDefault().EmpresaId, true))
         );
     }
 
@@ -70,12 +59,12 @@ public class VeiculoService(
 
         await Task.WhenAll(
             _redisRepository.DeleteAsync(KeyRedis.Veiculos.Veiculo(model.Id)),
-            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, false)),
-            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, true))
+            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(model.EmpresaId, false)),
+            _redisRepository.DeleteAsync(KeyRedis.Veiculos.VeiculosEmpresa(model.EmpresaId, true))
         );
     }
 
-    public async Task<List<VeiculoViewModel>> ObterAsync(bool incluirDeletados = false)
+    public async Task<List<VeiculoViewModel>> ObterAsync(int empresaId, bool incluirDeletados = false)
     {
         var status = new List<StatusEntityEnum>
         {
@@ -85,13 +74,13 @@ public class VeiculoService(
         if (incluirDeletados)
             status.Add(StatusEntityEnum.Deletado);
 
-        var chave = KeyRedis.Veiculos.VeiculosEmpresa(_userContext.Empresa, incluirDeletados);
+        var chave = KeyRedis.Veiculos.VeiculosEmpresa(empresaId, incluirDeletados);
         var veiculos = await _redisRepository.GetAsync<IEnumerable<Veiculo>>(chave);
 
         if (veiculos is null || !veiculos.Any())
         {
             veiculos = await _veiculoRepository.BuscarAsync(x =>
-                x.EmpresaId == _userContext.Empresa && status.Contains(x.Status)
+                x.EmpresaId == empresaId && status.Contains(x.Status)
             );
 
             await _redisRepository.SetAsync(chave, veiculos, "veiculos");
@@ -136,7 +125,7 @@ public class VeiculoService(
         var veiculo = await _redisRepository.GetAsync<Veiculo>($"veiculo:{veiculoId}");
         if (veiculo is null)
         {
-            veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId && x.EmpresaId == _userContext.Empresa);
+            veiculo = await _veiculoRepository.BuscarUmAsync(x => x.Id == veiculoId);
             await _redisRepository.SetAsync(KeyRedis.Veiculos.Veiculo(veiculo.Id), veiculo, "veiculos");
         }
 

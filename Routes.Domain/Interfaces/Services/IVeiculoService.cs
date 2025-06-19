@@ -8,7 +8,7 @@ public interface IVeiculoService
 {
     Task AdicionarAsync(List<VeiculoAdicionarViewModel> veiculosViewModels);
     Task AtualizarAsync(List<VeiculoAtualizarViewModel> veiculosViewModels);
-    Task<List<VeiculoViewModel>> ObterAsync(bool incluirDeletados = false);
+    Task<List<VeiculoViewModel>> ObterAsync(int empresaId, bool incluirDeletados = false);
     Task DeletarAsync(int id);
     Task<VeiculoViewModel> ObterAsync(int veiculoId, int rotaId, bool completarDadosDoUsuario = false);
 }

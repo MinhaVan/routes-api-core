@@ -11,7 +11,6 @@ public class UsuarioNovoViewModel
     public string UltimoNome { get; set; }
     public PerfilEnum Perfil { get; set; }
     public int? PlanoId { get; set; }
-    public int EmpresaId { get; set; }
     public int? EnderecoPrincipalId { get; set; }
     public string Senha { get; set; }
     public bool IsMotorista { get; set; }
