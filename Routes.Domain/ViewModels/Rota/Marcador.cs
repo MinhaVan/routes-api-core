@@ -6,6 +6,7 @@ namespace Routes.Domain.ViewModels.Rota;
 
 public class Marcador
 {
+    public int Id { get; set; }
     public int Ordem { get; set; }
     public int EnderecoId { get; set; }
     public TipoMarcadorEnum TipoMarcador { get; set; }

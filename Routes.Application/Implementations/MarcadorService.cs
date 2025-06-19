@@ -61,6 +61,7 @@ public class MarcadorService(
                 {
                     marcador = new Marcador
                     {
+                        Id = index++,
                         Ordem = index++,
                         Titulo = titulo,
                         TipoMarcador = tipoMarcador,
