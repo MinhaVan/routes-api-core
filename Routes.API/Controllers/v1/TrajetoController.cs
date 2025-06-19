@@ -70,7 +70,7 @@ public class TrajetoController(
     /// </summary>
     /// <param name="rotaId">Identificador da rota</param>
     /// <returns>Lista de marcadores</returns>
-    [HttpGet("Rota/{rotaId}/marcadores")]
+    [HttpGet("Rota/{rotaId}/Marcadores")]
     public async Task<IActionResult> ObterTodosMarcadoresParaRotasAsync([FromRoute] int rotaId)
     {
         var response = await _marcadorService.ObterTodosMarcadoresParaRotasAsync(rotaId);
