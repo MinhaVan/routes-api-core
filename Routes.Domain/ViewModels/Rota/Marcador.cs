@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 using Routes.Domain.Enums;
 using System.Globalization;
+using System;
 
 namespace Routes.Domain.ViewModels.Rota;
 
 public class Marcador
 {
-    public int Id { get; set; }
+    public int? Id { get; set; }
+    public string IdTemporario { get; set; }
     public int Ordem { get; set; }
-    public int EnderecoId { get; set; }
+    public int? EnderecoId { get; set; }
     public TipoMarcadorEnum TipoMarcador { get; set; }
     public string Titulo { get; set; }
     public double Latitude { get; set; }

@@ -61,12 +61,13 @@ public class MarcadorService(
                 {
                     marcador = new Marcador
                     {
-                        Id = index++,
                         Ordem = index++,
+                        IdTemporario = Guid.NewGuid().ToString(),
                         Titulo = titulo,
                         TipoMarcador = tipoMarcador,
                         Latitude = lat,
                         Longitude = lng,
+                        EnderecoId = enderecoId,
                         Aluno = _mapper.Map<AlunoViewModel>(aluno),
                         Alunos = new List<AlunoViewModel> { _mapper.Map<AlunoViewModel>(aluno) }
                     };

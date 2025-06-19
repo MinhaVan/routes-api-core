@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,7 +28,7 @@ public class OrdemTrajetoService(
             Status = StatusEntityEnum.Ativo,
             Marcadores = marcadoresOrdenados.Select(x => new OrdemTrajetoMarcador
             {
-                EnderecoId = x.EnderecoId,
+                EnderecoId = x.EnderecoId ?? 0,
                 Latitude = x.Latitude,
                 Longitude = x.Longitude,
                 TipoMarcador = x.TipoMarcador,
@@ -67,7 +66,7 @@ public class OrdemTrajetoService(
             TipoMarcador = rota.TipoMarcador,
             Latitude = rota.Latitude,
             Longitude = rota.Longitude,
-            EnderecoId = rota.EnderecoId
+            EnderecoId = rota.EnderecoId ?? 0
         });
 
         await _ordemTrajetoMarcadorRepository.AdicionarAsync(ordemTrajetoMarcadores);
