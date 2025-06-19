@@ -49,6 +49,7 @@ public class MarcadorService(
         var marcadoresPartidas = new Dictionary<string, Marcador>();
         var marcadoresDestinos = new Dictionary<string, Marcador>();
         var now = DateTime.Now;
+        var index = 0;
 
         foreach (var aluno in alunos)
         {
@@ -60,6 +61,7 @@ public class MarcadorService(
                 {
                     marcador = new Marcador
                     {
+                        Ordem = index++,
                         Titulo = titulo,
                         TipoMarcador = tipoMarcador,
                         Latitude = lat,
