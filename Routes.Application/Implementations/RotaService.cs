@@ -110,7 +110,7 @@ public class RotaService(
             rotas = await _rotaRepository.BuscarAsync(x =>
                     x.EmpresaId == _userContext.Empresa &&
                     (x.Status == StatusEntityEnum.Ativo || (incluirDeletados && x.Status == StatusEntityEnum.Deletado)),
-                    x => incluirDetalhes ? x.Veiculo : null);
+                    x => x.Veiculo);
 
             if (rotas is not null && rotas.Any())
                 await _redisRepository.SetAsync(chave, rotas);
