@@ -48,6 +48,7 @@ public class RotaService(
         model.Horario = rotaAtualizarViewModel.Horario;
         model.TipoRota = rotaAtualizarViewModel.TipoRota;
         model.Status = rotaAtualizarViewModel.Status;
+        model.DeveBuscarRotaNoGoogleMaps = rotaAtualizarViewModel.DeveBuscarRotaNoGoogleMaps;
         await LimparCache();
 
         await _rotaRepository.AtualizarAsync(model);
