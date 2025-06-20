@@ -162,7 +162,7 @@ public class TrajetoService(
         var ordemTrajeto = await _ordemTrajetoRepository.BuscarUmAsync(
             x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo, x => x.Marcadores);
 
-        if (ordemTrajeto is null || !ordemTrajeto.Marcadores.Any())
+        if (ordemTrajeto is not null || !ordemTrajeto.Marcadores.Any())
         {
             ordemTrajeto.SetDeletado();
             await _ordemTrajetoRepository.AtualizarAsync(ordemTrajeto);
@@ -171,7 +171,6 @@ public class TrajetoService(
         ordemTrajeto = new OrdemTrajeto
         {
             RotaId = rotaId,
-            GeradoAutomaticamente = true,
             Status = StatusEntityEnum.Ativo,
             Marcadores = new List<OrdemTrajetoMarcador>()
         };
@@ -193,10 +192,12 @@ public class TrajetoService(
                 throw new BusinessRuleException("Não foi possível obter a rota ideal.");
 
             rotaIdeal = rotaIdealResponse.Data;
+            ordemTrajeto.GeradoAutomaticamente = true;
         }
         else
         {
             rotaIdeal = [origem, .. pontosIntermediarios, destino];
+            ordemTrajeto.GeradoAutomaticamente = false;
         }
 
         await _ordemTrajetoService.AtualizarOuCriarOrdemTrajeto(ordemTrajeto, rotaId, rotaIdeal);
