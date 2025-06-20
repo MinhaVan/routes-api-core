@@ -155,51 +155,53 @@ public class TrajetoService(
     /// <exception cref="BusinessRuleException"></exception>
     public async Task GerarMelhorTrajetoAsync(int rotaId)
     {
-        var rota = await _rotaRepository.BuscarUmAsync(x => x.Id == rotaId, z => z.AlunoRotas);
+        var rota = await _rotaRepository.BuscarUmAsync(x => x.Id == rotaId, z => z.AlunoRotas)
+            ?? throw new BusinessRuleException("Rota não encontrada.");
+
         var alunosId = rota.AlunoRotas.Select(x => x.AlunoId).ToList();
         var alunos = (await _pessoasAPI.ObterAlunoPorIdAsync(alunosId)).Data;
 
-        var ordemTrajeto = await _ordemTrajetoRepository.BuscarUmAsync(
-            x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo, x => x.Marcadores);
+        // Remove ordem antiga se existir
+        var ordemExistente = await _ordemTrajetoRepository.BuscarUmAsync(
+            x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo,
+            x => x.Marcadores
+        );
 
-        if (ordemTrajeto is not null || !ordemTrajeto.Marcadores.Any())
+        if (ordemExistente is not null && ordemExistente.Marcadores.Any())
         {
-            ordemTrajeto.SetDeletado();
-            await _ordemTrajetoRepository.AtualizarAsync(ordemTrajeto);
+            ordemExistente.SetDeletado();
+            await _ordemTrajetoRepository.AtualizarAsync(ordemExistente);
         }
 
-        ordemTrajeto = new OrdemTrajeto
+        var novaOrdem = new OrdemTrajeto
         {
             RotaId = rotaId,
             Status = StatusEntityEnum.Ativo,
-            Marcadores = new List<OrdemTrajetoMarcador>()
+            Marcadores = new()
         };
 
         var marcadores = _marcadorService.ObterMarcadorPorRotaDirecao(alunos, rota.TipoRota, rotaId);
-
         if (marcadores.Count < 2)
             throw new BusinessRuleException("Não há marcadores suficientes para gerar o trajeto.");
 
         var origem = marcadores.First();
         var destino = marcadores.Last();
-        var pontosIntermediarios = marcadores.Skip(1).Take(marcadores.Count - 2).ToList();
+        var intermediarios = marcadores.Skip(1).Take(marcadores.Count - 2).ToList();
 
-        List<Marcador> rotaIdeal;
-        if (pontosIntermediarios.Count > 1)
-        {
-            var rotaIdealResponse = await _googleDirectionsService.ObterRotaIdealAsync(origem, destino, pontosIntermediarios);
-            if (rotaIdealResponse.Sucesso is false || rotaIdealResponse.Data is null)
-                throw new BusinessRuleException("Não foi possível obter a rota ideal.");
+        var rotaIdeal = intermediarios.Count > 1
+            ? await ObterRotaIdeal(origem, destino, intermediarios, novaOrdem)
+            : [origem, .. intermediarios, destino];
 
-            rotaIdeal = rotaIdealResponse.Data;
-            ordemTrajeto.GeradoAutomaticamente = true;
-        }
-        else
-        {
-            rotaIdeal = [origem, .. pontosIntermediarios, destino];
-            ordemTrajeto.GeradoAutomaticamente = false;
-        }
+        await _ordemTrajetoService.AtualizarOuCriarOrdemTrajeto(novaOrdem, rotaId, rotaIdeal);
+    }
 
-        await _ordemTrajetoService.AtualizarOuCriarOrdemTrajeto(ordemTrajeto, rotaId, rotaIdeal);
+    private async Task<List<Marcador>> ObterRotaIdeal(Marcador origem, Marcador destino, List<Marcador> pontos, OrdemTrajeto ordem)
+    {
+        var resposta = await _googleDirectionsService.ObterRotaIdealAsync(origem, destino, pontos);
+        if (!resposta.Sucesso || resposta.Data is null)
+            throw new BusinessRuleException("Não foi possível obter a rota ideal.");
+
+        ordem.GeradoAutomaticamente = true;
+        return resposta.Data;
     }
 }
