@@ -33,7 +33,7 @@ public class TrajetoController(
     /// </summary>
     /// <param name="rotaId">Identificador da Rota</param>
     /// <returns></returns>
-    [HttpPost("Rota/{rotaId}/Gerar")]
+    [HttpPost("Rota/{rotaId}/GerarMelhorTrajeto")]
     public async Task<IActionResult> GerarMelhorTrajetoAsync(int rotaId)
     {
         await _trajetoService.GerarMelhorTrajetoAsync(rotaId);
