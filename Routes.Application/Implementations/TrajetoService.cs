@@ -96,6 +96,11 @@ public class TrajetoService(
         var alunosId = rota.AlunoRotas.Select(x => x.AlunoId).ToList();
         var alunos = (await _pessoasAPI.ObterAlunoPorIdAsync(alunosId)).Data;
 
+        if (rota.DeveBuscarRotaNoGoogleMaps)
+        {
+            return await GerarMelhorTrajetoAsync(rotaId);
+        }
+
         var ordemTrajeto = await _ordemTrajetoRepository.BuscarUmAsync(
             x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo, x => x.Marcadores);
 
@@ -153,7 +158,7 @@ public class TrajetoService(
     /// <param name="rotaId"></param>
     /// <returns></returns>
     /// <exception cref="BusinessRuleException"></exception>
-    public async Task GerarMelhorTrajetoAsync(int rotaId)
+    public async Task<List<Marcador>> GerarMelhorTrajetoAsync(int rotaId)
     {
         var rota = await _rotaRepository.BuscarUmAsync(x => x.Id == rotaId, z => z.AlunoRotas)
             ?? throw new BusinessRuleException("Rota não encontrada.");
@@ -192,7 +197,7 @@ public class TrajetoService(
             ? await ObterRotaIdeal(origem, destino, intermediarios, novaOrdem)
             : [origem, .. intermediarios, destino];
 
-        await _ordemTrajetoService.AtualizarOuCriarOrdemTrajeto(novaOrdem, rotaId, rotaIdeal);
+        return await _ordemTrajetoService.CriarOrdemTrajetoAsync(novaOrdem, rotaId, rotaIdeal);
     }
 
     private async Task<List<Marcador>> ObterRotaIdeal(Marcador origem, Marcador destino, List<Marcador> pontos, OrdemTrajeto ordem)

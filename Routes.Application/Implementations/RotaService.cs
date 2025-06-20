@@ -19,7 +19,6 @@ public class RotaService(
     IUserContext _userContext,
     IPessoasAPI _pessoasAPI,
     IRedisRepository _redisRepository,
-    IVeiculoService _veiculoService,
     IRotaHistoricoRepository _rotaHistoricoRepository,
     IBaseRepository<MotoristaRota> _motoristaRotaRepository,
     IBaseRepository<AlunoRota> _alunoRotaRepository,

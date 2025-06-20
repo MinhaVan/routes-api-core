@@ -37,7 +37,6 @@ public class MarcadorService(
                 {
                     EnderecoId = m.EnderecoId,
                     Id = m.Id,
-                    IdTemporario = Guid.NewGuid().ToString(),
                     Latitude = m.Latitude,
                     Longitude = m.Longitude,
                     Ordem = m.Ordem,
@@ -91,7 +90,6 @@ public class MarcadorService(
                     marcador = new Marcador
                     {
                         Ordem = index++,
-                        IdTemporario = Guid.NewGuid().ToString(),
                         Titulo = titulo,
                         TipoMarcador = tipoMarcador,
                         Latitude = lat,

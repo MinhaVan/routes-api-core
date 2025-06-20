@@ -42,25 +42,21 @@ public class OrdemTrajetoService(
     }
 
 
-    public async Task AtualizarOuCriarOrdemTrajeto(OrdemTrajeto ordemTrajeto, int rotaId, List<Marcador> rotaIdeal)
+    public async Task<List<Marcador>> CriarOrdemTrajetoAsync(OrdemTrajeto ordemTrajeto, int rotaId, List<Marcador> rotaIdeal)
     {
-        if (ordemTrajeto is null)
+        var ordemTrajetoModel = await _ordemTrajetoRepository
+            .BuscarUmAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo, x => x.Marcadores);
+
+        if (ordemTrajetoModel is not null)
         {
-            ordemTrajeto = new OrdemTrajeto
-            {
-                RotaId = rotaId,
-                Status = StatusEntityEnum.Ativo
-            };
-            await _ordemTrajetoRepository.AdicionarAsync(ordemTrajeto);
-        }
-        else
-        {
-            foreach (var marcador in ordemTrajeto.Marcadores)
+            foreach (var marcador in ordemTrajetoModel.Marcadores)
                 marcador.Status = StatusEntityEnum.Deletado;
 
-            await _ordemTrajetoMarcadorRepository.AtualizarAsync(ordemTrajeto.Marcadores);
+            ordemTrajetoModel.Status = StatusEntityEnum.Deletado;
+            await _ordemTrajetoRepository.AtualizarAsync(ordemTrajetoModel);
         }
 
+        await _ordemTrajetoRepository.AdicionarAsync(ordemTrajeto);
         var ordemTrajetoMarcadores = rotaIdeal.Select(rota => new OrdemTrajetoMarcador
         {
             Status = StatusEntityEnum.Ativo,
@@ -72,5 +68,6 @@ public class OrdemTrajetoService(
         });
 
         await _ordemTrajetoMarcadorRepository.AdicionarAsync(ordemTrajetoMarcadores);
+        return rotaIdeal;
     }
 }

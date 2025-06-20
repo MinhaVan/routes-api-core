@@ -12,6 +12,7 @@ public class Rota : Entity
     public DiaSemanaEnum DiaSemana { get; set; }
     public TimeOnly Horario { get; set; }
     public TipoRotaEnum TipoRota { get; set; }
+    public bool DeveBuscarRotaNoGoogleMaps { get; set; }
     //
     public virtual List<RotaHistorico> Historicos { get; set; }
     public virtual List<AlunoRota> AlunoRotas { get; set; }

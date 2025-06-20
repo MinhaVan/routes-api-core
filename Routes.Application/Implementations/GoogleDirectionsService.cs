@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Routes.Domain.Interfaces.Services;
+using Routes.Domain.Utils;
 using Routes.Domain.ViewModels;
 using Routes.Domain.ViewModels.Rota;
 using Routes.Service.Configuration;
@@ -48,7 +49,9 @@ public class GoogleDirectionsService(
         if (pontosIntermediarios == null || pontosIntermediarios.Count == 0)
             throw new ArgumentException("Precisa de pelo menos 1 waypoint para otimizar.");
 
-        var waypointsString = "optimize:true|" + string.Join("|", pontosIntermediarios.Select(p => p.ToString()));
+        var pontosOrdenados = pontosIntermediarios.OrdenarComDependencias();
+        var waypointsString = string.Join("|", pontosOrdenados.Select(p => p.ToString()));
+
         var url = $"https://maps.googleapis.com/maps/api/directions/json?" +
                   $"origin={origem}&destination={destino}&waypoints={Uri.EscapeDataString(waypointsString)}&key={_secretManager.Google.Key}";
 
@@ -61,12 +64,8 @@ public class GoogleDirectionsService(
         if (data?.Routes?.FirstOrDefault() is not { } route)
             throw new Exception("Não foi possível encontrar rota.");
 
-        var ordemOtimizada = route.WaypointOrder;
-        var waypointsOrdenados = ordemOtimizada.Select(index => pontosIntermediarios[index]).ToList();
-
-        // Retorna a rota completa: origem -> waypoints ordenados -> destino
         var rotaFinal = new List<Marcador> { origem };
-        rotaFinal.AddRange(waypointsOrdenados);
+        rotaFinal.AddRange(pontosOrdenados);
         rotaFinal.Add(destino);
 
         return new BaseResponse<List<Marcador>>

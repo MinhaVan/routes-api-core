@@ -15,6 +15,7 @@ public class RotaViewModel
     public DiaSemanaEnum DiaSemana { get; set; }
     public TimeOnly Horario { get; set; }
     public TipoRotaEnum TipoRota { get; set; }
+    public bool DeveBuscarRotaNoGoogleMaps { get; set; }
     //
     public virtual VeiculoViewModel Veiculo { get; set; }
     public virtual List<AlunoRotaViewModel> AlunoRotas { get; set; }
