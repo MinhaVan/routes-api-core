@@ -18,13 +18,14 @@ public class OrdemTrajetoService(
         var ordemTrajeto = await _ordemTrajetoRepository.BuscarUmAsync(x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo);
         if (ordemTrajeto is not null)
         {
-            ordemTrajeto.Status = StatusEntityEnum.Deletado;
+            ordemTrajeto.SetDeletado();
             await _ordemTrajetoRepository.AtualizarAsync(ordemTrajeto);
         }
 
         var novaOrdemTrajeto = new OrdemTrajeto
         {
             RotaId = rotaId,
+            GeradoAutomaticamente = false,
             Status = StatusEntityEnum.Ativo,
             Marcadores = marcadoresOrdenados.Select(x => new OrdemTrajetoMarcador
             {

@@ -162,6 +162,20 @@ public class TrajetoService(
         var ordemTrajeto = await _ordemTrajetoRepository.BuscarUmAsync(
             x => x.RotaId == rotaId && x.Status == StatusEntityEnum.Ativo, x => x.Marcadores);
 
+        if (ordemTrajeto is null || !ordemTrajeto.Marcadores.Any())
+        {
+            ordemTrajeto.SetDeletado();
+            await _ordemTrajetoRepository.AtualizarAsync(ordemTrajeto);
+        }
+
+        ordemTrajeto = new OrdemTrajeto
+        {
+            RotaId = rotaId,
+            GeradoAutomaticamente = true,
+            Status = StatusEntityEnum.Ativo,
+            Marcadores = new List<OrdemTrajetoMarcador>()
+        };
+
         var marcadores = _marcadorService.ObterMarcadorPorRotaDirecao(alunos, rota.TipoRota, rotaId);
 
         if (marcadores.Count < 2)
