@@ -9,7 +9,6 @@ public class SecretManager
     public ConnectionStrings ConnectionStrings { get; set; }
     public Logging Logging { get; set; }
     public TokenConfigurations TokenConfigurations { get; set; }
-    public Asaas Asaas { get; set; }
     public Google Google { get; set; }
     public URL URL { get; set; }
     public Infra Infra { get; set; }
@@ -76,13 +75,6 @@ public class TokenConfigurations
     public string Secret { get; set; }
     public int Minutes { get; set; }
     public int DaysToExpiry { get; set; }
-}
-
-public class Asaas
-{
-    public string Url { get; set; }
-    public string AcessToken { get; set; }
-    public string TokenWebHookAsaas { get; set; }
 }
 
 public class Google
