@@ -27,6 +27,7 @@ public static class AuthenticationExtensions
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = tokenConfigurations.Issuer,
                 ValidAudience = tokenConfigurations.Audience,

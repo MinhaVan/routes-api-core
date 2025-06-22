@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
+using Routes.Data.Utils;
 using Routes.Domain.Interfaces.Repositories;
 
 namespace Routes.Data.Implementations;
@@ -26,7 +26,7 @@ public class RabbitMqRepository(
                 { "x-dead-letter-routing-key", $"{queue}.retry" }
             });
 
-            var message = JsonSerializer.Serialize(data);
+            var message = data.ToJson();
             var body = Encoding.UTF8.GetBytes(message);
 
             channel.BasicPublish("", queue, null, body);
