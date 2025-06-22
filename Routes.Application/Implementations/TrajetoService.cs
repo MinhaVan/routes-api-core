@@ -13,6 +13,8 @@ using Routes.Service.Exceptions;
 using Microsoft.Extensions.Logging;
 using Routes.Domain.Interfaces.APIs;
 using Routes.Domain.Utils;
+using Routes.Domain.ViewModels.Notificacao;
+using Routes.Data.Utils;
 
 namespace Routes.Service.Implementations;
 
@@ -69,12 +71,18 @@ public class TrajetoService(
             if (alunoEntrouNaVan is false)
             {
                 var responsavel = await _authApi.ObterUsuarioAsync(aluno.ResponsavelId);
-                var request = new
+                var request = new NotificacaoRequest
                 {
-                    Nome = $"{responsavel.Data.PrimeiroNome} {responsavel.Data.UltimoNome}",
-                    Contato = responsavel.Data.Contato,
-                    Email = responsavel.Data.Email,
+                    TipoContatoNotificacao = TipoContatoNotificacaoEnum.Whatsapp,
                     TipoNotificacao = TipoNotificacaoEnum.AlunoNaoEntrouNaVan,
+                    Destinos = new List<string> { responsavel.Data.Contato },
+                    Assunto = "Aluno não entrou na van",
+                    Data = new
+                    {
+                        Nome = $"{responsavel.Data.PrimeiroNome} {responsavel.Data.UltimoNome}",
+                        Contato = responsavel.Data.Contato,
+                        NomeAluno = $"{aluno.PrimeiroNome} {aluno.UltimoNome}",
+                    }.ToJson()
                 };
 
                 _rabbitMqRepository.Publish(
