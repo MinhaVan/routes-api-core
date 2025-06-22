@@ -79,7 +79,7 @@ public class TrajetoService(
                     Assunto = "Aluno não entrou na van",
                     Data = new
                     {
-                        Nome = $"{responsavel.Data.PrimeiroNome} {responsavel.Data.UltimoNome}",
+                        NomeResponsavel = $"{responsavel.Data.PrimeiroNome} {responsavel.Data.UltimoNome}",
                         Contato = responsavel.Data.Contato,
                         NomeAluno = $"{aluno.PrimeiroNome} {aluno.UltimoNome}",
                     }.ToJson()
@@ -87,7 +87,7 @@ public class TrajetoService(
 
                 _rabbitMqRepository.Publish(
                     RabbitMqQueues.EnviarNotificacao,
-                    new BaseQueue<object>
+                    new BaseQueue<NotificacaoRequest>
                     {
                         Mensagem = request,
                         Retry = 0
