@@ -26,6 +26,7 @@ public class TrajetoService(
     IBaseRepository<AjusteAlunoRota> _ajusteAlunoRotaRepository,
     IBaseRepository<Endereco> _enderecoRepository,
     IRotaHistoricoRepository _rotaHistoricoRepository,
+    IAuthApi _authApi,
     IBaseRepository<OrdemTrajeto> _ordemTrajetoRepository,
     IBaseRepository<AlunoRotaHistorico> _alunoRotaHistoricoRepository,
     IGoogleDirectionsService _googleDirectionsService,
@@ -65,14 +66,26 @@ public class TrajetoService(
                 alunoRotaHistorico = model;
             }
 
-            _rabbitMqRepository.Publish(
-                RabbitMqQueues.EnviarNotificacaoResponsavel,
-                new BaseQueue<AlunoRotaHistorico>
+            if (alunoEntrouNaVan is false)
+            {
+                var responsavel = await _authApi.ObterUsuarioAsync(aluno.ResponsavelId);
+                var request = new
                 {
-                    Mensagem = alunoRotaHistorico,
-                    Retry = 0
-                }
-            );
+                    Nome = $"{responsavel.Data.PrimeiroNome} {responsavel.Data.UltimoNome}",
+                    Contato = responsavel.Data.Contato,
+                    Email = responsavel.Data.Email,
+                    TipoNotificacao = TipoNotificacaoEnum.AlunoNaoEntrouNaVan,
+                };
+
+                _rabbitMqRepository.Publish(
+                    RabbitMqQueues.EnviarNotificacao,
+                    new BaseQueue<object>
+                    {
+                        Mensagem = request,
+                        Retry = 0
+                    }
+                );
+            }
         }
         catch (Exception ex)
         {
