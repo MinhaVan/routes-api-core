@@ -21,6 +21,8 @@ public class UsuarioViewModel
     public string RefreshToken { get; set; }
     public DateTime RefreshTokenExpiryTime { get; set; }
     public int EmpresaId { get; set; }
+    public bool NotificarViaTelefone { get; set; } = false;
+    public bool NotificarViaEmail { get; set; } = false;
 
     public virtual IList<AlunoViewModel> Alunos { get; set; }
     public virtual IList<EnderecoViewModel> Enderecos { get; set; }

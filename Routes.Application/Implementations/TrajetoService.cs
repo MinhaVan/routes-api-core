@@ -71,28 +71,31 @@ public class TrajetoService(
             if (alunoEntrouNaVan is false)
             {
                 var responsavel = await _authApi.ObterUsuarioAsync(aluno.ResponsavelId);
-                var request = new NotificacaoRequest
+                if (responsavel is not null && responsavel.Data is not null && responsavel.Data.NotificarViaTelefone is true)
                 {
-                    TipoContatoNotificacao = TipoContatoNotificacaoEnum.Whatsapp,
-                    TipoNotificacao = TipoNotificacaoEnum.AlunoNaoEntrouNaVan,
-                    Destinos = new List<string> { responsavel.Data.Contato },
-                    Assunto = "Aluno não entrou na van",
-                    Data = new
+                    var request = new NotificacaoRequest
                     {
-                        NomeResponsavel = $"{responsavel.Data.PrimeiroNome} {responsavel.Data.UltimoNome}",
-                        Contato = responsavel.Data.Contato,
-                        NomeAluno = $"{aluno.PrimeiroNome} {aluno.UltimoNome}",
-                    }.ToJson()
-                };
+                        TipoContatoNotificacao = TipoContatoNotificacaoEnum.Whatsapp,
+                        TipoNotificacao = TipoNotificacaoEnum.AlunoNaoEntrouNaVan,
+                        Destinos = new List<string> { responsavel.Data.Contato },
+                        Assunto = "Aluno não entrou na van",
+                        Data = new
+                        {
+                            NomeResponsavel = $"{responsavel.Data.PrimeiroNome} {responsavel.Data.UltimoNome}",
+                            Contato = responsavel.Data.Contato,
+                            NomeAluno = $"{aluno.PrimeiroNome} {aluno.UltimoNome}",
+                        }.ToJson()
+                    };
 
-                _rabbitMqRepository.Publish(
-                    RabbitMqQueues.EnviarNotificacao,
-                    new BaseQueue<NotificacaoRequest>
-                    {
-                        Mensagem = request,
-                        Retry = 0
-                    }
-                );
+                    _rabbitMqRepository.Publish(
+                        RabbitMqQueues.EnviarNotificacao,
+                        new BaseQueue<NotificacaoRequest>
+                        {
+                            Mensagem = request,
+                            Retry = 0
+                        }
+                    );
+                }
             }
         }
         catch (Exception ex)
